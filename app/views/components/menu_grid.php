@@ -60,5 +60,17 @@
                 <small><?= e(t('Salary')); ?></small>
             </a>
         </div>
+        <div class="col">
+            <a class="menu-card" href="<?= e(base_url('/journal')); ?>">
+                <div class="menu-icon-wrap"><i class="fa-solid fa-book-journal-whills"></i></div>
+                <small><?= e(t('Journal')); ?></small>
+            </a>
+        </div>
+        <div class="col">
+            <a class="menu-card" href="<?= e(base_url('/ledger')); ?>">
+                <div class="menu-icon-wrap"><i class="fa-solid fa-book"></i></div>
+                <small><?= e(t('Ledger')); ?></small>
+            </a>
+        </div>
     </div>
 </section>

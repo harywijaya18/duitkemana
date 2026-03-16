@@ -172,7 +172,12 @@ $buildUrl = static function (string $basePath, array $extra = []) use ($statusFi
                                 <div class="fw-semibold"><?= e((string) ($row['user_name'] ?? 'Guest')); ?></div>
                                 <small class="text-muted"><?= e((string) ($row['user_email'] ?? '-')); ?></small>
                             </td>
-                            <td><?= e((string) ($row['subject'] ?? '-')); ?></td>
+                            <td>
+                                <div class="fw-semibold"><?= e((string) ($row['subject'] ?? '-')); ?></div>
+                                <?php if (!empty($row['initial_message'])): ?>
+                                    <small class="text-muted"><?= e((string) $row['initial_message']); ?></small>
+                                <?php endif; ?>
+                            </td>
                             <td><?= e((string) ($row['category'] ?? '-')); ?></td>
                             <td><span class="badge <?= e($statusClass); ?>"><?= e($status); ?></span></td>
                             <td><span class="badge <?= e($priorityClass); ?>"><?= e($priority); ?></span></td>

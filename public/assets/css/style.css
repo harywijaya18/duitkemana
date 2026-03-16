@@ -472,6 +472,203 @@ body {
 }
 
 /* ─────────────────────────────────────────
+   PROFILE PAGES
+───────────────────────────────────────── */
+.profile-page-head {
+    margin-top: 4px;
+}
+
+.profile-identity-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(8, 145, 178, 0.08), rgba(255, 255, 255, 0.92));
+    border: 1px solid rgba(99, 102, 241, 0.14);
+    box-shadow: 0 10px 26px rgba(99, 102, 241, 0.10);
+}
+
+.profile-identity-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #4338ca, #0891b2);
+    box-shadow: 0 12px 24px rgba(67, 56, 202, 0.22);
+}
+
+.profile-identity-label,
+.profile-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+
+.profile-section-card,
+.profile-menu-card,
+.about-app-card {
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.09);
+}
+
+.profile-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.profile-menu-card {
+    padding: 10px 14px;
+}
+
+.profile-nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+}
+
+.profile-nav-row + .profile-nav-row {
+    border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.profile-nav-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4f46e5;
+    background: rgba(79, 70, 229, 0.10);
+    border: 1px solid rgba(79, 70, 229, 0.14);
+    flex-shrink: 0;
+}
+
+.profile-nav-icon-wrap--warm {
+    color: #d97706;
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.18);
+}
+
+.support-hero-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid rgba(8, 145, 178, 0.14);
+    background: linear-gradient(135deg, rgba(8, 145, 178, 0.10), rgba(79, 70, 229, 0.06), rgba(255, 255, 255, 0.94));
+}
+
+.support-hero-icon,
+.about-app-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.support-hero-icon {
+    color: #0891b2;
+    background: rgba(8, 145, 178, 0.12);
+    border: 1px solid rgba(8, 145, 178, 0.14);
+}
+
+.support-ticket-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.support-ticket-item {
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 16px;
+    padding: 14px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.92));
+}
+
+.support-ticket-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #4f46e5;
+    background: rgba(79, 70, 229, 0.10);
+    text-transform: capitalize;
+}
+
+.support-ticket-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.about-app-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(238, 242, 255, 0.88));
+}
+
+.about-app-badge-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.about-app-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(79, 70, 229, 0.10);
+    color: #4f46e5;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.about-app-icon {
+    color: #fff;
+    background: linear-gradient(135deg, #4338ca, #7c3aed);
+    box-shadow: 0 12px 24px rgba(124, 58, 237, 0.22);
+}
+
+.about-app-story {
+    line-height: 1.8;
+    color: #334155;
+}
+
+.about-app-note {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* ─────────────────────────────────────────
    INSIGHT ITEMS
 ───────────────────────────────────────── */
 .insight-item {

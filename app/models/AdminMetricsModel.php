@@ -2,9 +2,18 @@
 
 class AdminMetricsModel extends Model
 {
-    public function dashboardSnapshot(int $months = 6): array
+    public function dashboardSnapshot(int $months = 6, int $topSpendersPage = 1, int $recentUsersPage = 1, int $perPage = 10): array
     {
         $months = max(3, min(12, $months));
+        $topSpendersPage = max(1, $topSpendersPage);
+        $recentUsersPage = max(1, $recentUsersPage);
+        $perPage = max(5, min(50, $perPage));
+
+        $cacheKey = sprintf('dashboard_%d_%d_%d_%d', $months, $topSpendersPage, $recentUsersPage, $perPage);
+        $cached = $this->readCache($cacheKey, 60);
+        if ($cached !== null) {
+            return $cached;
+        }
 
         $kpis = [
             'total_users' => $this->intValue('SELECT COUNT(*) FROM users'),
@@ -22,13 +31,16 @@ class AdminMetricsModel extends Model
 
         $recurring = $this->recurringStatusForCurrentMonth();
 
-        return [
+        $result = [
             'kpis' => $kpis,
             'recurring' => $recurring,
             'trend' => $this->monthlyTrend($months),
-            'top_spenders' => $this->topSpendersCurrentMonth(8),
-            'recent_users' => $this->recentUsers(8),
+            'top_spenders' => $this->topSpendersCurrentMonth($topSpendersPage, $perPage),
+            'recent_users' => $this->recentUsers($recentUsersPage, $perPage),
         ];
+
+        $this->writeCache($cacheKey, $result);
+        return $result;
     }
 
     private function recurringStatusForCurrentMonth(): array
@@ -144,8 +156,24 @@ class AdminMetricsModel extends Model
         return $series;
     }
 
-    private function topSpendersCurrentMonth(int $limit): array
+    private function topSpendersCurrentMonth(int $page, int $perPage): array
     {
+        $offset = ($page - 1) * $perPage;
+        $total = $this->intPrepared(
+            'SELECT COUNT(*)
+             FROM (
+                SELECT u.id
+                FROM users u
+                LEFT JOIN transactions t
+                    ON t.user_id = u.id
+                   AND YEAR(t.transaction_date) = YEAR(CURDATE())
+                   AND MONTH(t.transaction_date) = MONTH(CURDATE())
+                GROUP BY u.id
+                HAVING COUNT(t.id) > 0
+             ) x',
+            []
+        );
+
         $stmt = $this->db->prepare(
             'SELECT u.id, u.name, u.email,
                     COUNT(t.id) AS tx_count,
@@ -158,24 +186,81 @@ class AdminMetricsModel extends Model
              GROUP BY u.id, u.name, u.email
              HAVING COUNT(t.id) > 0
              ORDER BY total_expense DESC
-             LIMIT :lim'
+             LIMIT :lim OFFSET :off'
         );
-        $stmt->bindValue(':lim', max(1, $limit), PDO::PARAM_INT);
+        $stmt->bindValue(':lim', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchAll();
+
+        $items = $stmt->fetchAll();
+        return [
+            'items' => $items,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => max(1, (int) ceil($total / $perPage)),
+        ];
     }
 
-    private function recentUsers(int $limit): array
+    private function recentUsers(int $page, int $perPage): array
     {
+        $offset = ($page - 1) * $perPage;
+        $total = $this->intValue('SELECT COUNT(*) FROM users');
+
         $stmt = $this->db->prepare(
             'SELECT id, name, email, currency, created_at
              FROM users
              ORDER BY created_at DESC
-             LIMIT :lim'
+             LIMIT :lim OFFSET :off'
         );
-        $stmt->bindValue(':lim', max(1, $limit), PDO::PARAM_INT);
+        $stmt->bindValue(':lim', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchAll();
+
+        $items = $stmt->fetchAll();
+        return [
+            'items' => $items,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => max(1, (int) ceil($total / $perPage)),
+        ];
+    }
+
+    private function cacheDir(): string
+    {
+        return BASE_PATH . '/storage/cache/admin_metrics';
+    }
+
+    private function readCache(string $key, int $ttlSeconds): ?array
+    {
+        $file = $this->cacheDir() . '/' . sha1($key) . '.json';
+        if (!file_exists($file)) {
+            return null;
+        }
+
+        if ((time() - filemtime($file)) > $ttlSeconds) {
+            return null;
+        }
+
+        $raw = @file_get_contents($file);
+        if ($raw === false || $raw === '') {
+            return null;
+        }
+
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    private function writeCache(string $key, array $payload): void
+    {
+        $dir = $this->cacheDir();
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+
+        $file = $dir . '/' . sha1($key) . '.json';
+        @file_put_contents($file, json_encode($payload));
     }
 
     private function mapRows(array $rows, string $keyField, string $valueField): array

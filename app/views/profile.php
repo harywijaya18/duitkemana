@@ -1,8 +1,27 @@
-<section class="mb-3">
-    <h4><?= e(t('Profile')); ?></h4>
+<?php
+$userName = (string) ($profile['name'] ?? 'User');
+$userEmail = (string) ($profile['email'] ?? '-');
+$userInitial = strtoupper(substr(trim($userName) !== '' ? $userName : $userEmail, 0, 1));
+?>
+
+<section class="profile-page-head mb-3">
+    <div class="profile-identity-card">
+        <div class="profile-identity-avatar"><?= e($userInitial); ?></div>
+        <div>
+            <div class="profile-identity-label"><?= e(t('Profile')); ?></div>
+            <h4 class="mb-1"><?= e($userName); ?></h4>
+            <div class="text-muted small"><?= e($userEmail); ?></div>
+        </div>
+    </div>
 </section>
 
-<div class="soft-card mb-3">
+<div class="soft-card profile-section-card mb-3">
+    <div class="profile-section-head">
+        <div>
+            <div class="profile-section-label"><?= e(t('Profile')); ?></div>
+            <div class="text-muted small"><?= e(t('Your personal information and preferences.')); ?></div>
+        </div>
+    </div>
     <form method="post" action="<?= e(base_url('/profile/update')); ?>" class="vstack gap-3">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
         <div>
@@ -35,11 +54,32 @@
     </form>
 </div>
 
-<div class="soft-card">
-    <form method="post" action="<?= e(base_url('/logout')); ?>">
-        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
-        <button class="btn btn-outline-danger w-100" type="submit">
-            <i class="fa-solid fa-right-from-bracket me-2"></i><?= e(t('Logout')); ?>
-        </button>
-    </form>
+<div class="soft-card profile-menu-card mb-3">
+    <div class="profile-section-head">
+        <div>
+            <div class="profile-section-label"><?= e(t('Quick Access')); ?></div>
+            <div class="text-muted small"><?= e(t('Open support or app information from here.')); ?></div>
+        </div>
+    </div>
+
+    <a href="<?= e(base_url('/profile/support-center')); ?>" class="profile-nav-row text-decoration-none text-reset">
+        <div>
+            <div class="fw-semibold"><?= e(t('Support Center')); ?></div>
+            <small class="text-muted d-block mt-1">
+                <?= e($supportEnabled ? t('Open support ticket form and see your ticket history.') : t('Support Center is currently unavailable.')); ?>
+            </small>
+        </div>
+        <div class="profile-nav-icon-wrap">
+            <i class="fa-solid fa-life-ring"></i>
+        </div>
+    </a>
+    <a href="<?= e(base_url('/profile/about-app')); ?>" class="profile-nav-row text-decoration-none text-reset">
+        <div>
+            <div class="fw-semibold"><?= e(t('About Application')); ?></div>
+            <small class="text-muted d-block mt-1"><?= e(t('View app version and background story.')); ?></small>
+        </div>
+        <div class="profile-nav-icon-wrap profile-nav-icon-wrap--warm">
+            <i class="fa-solid fa-circle-info"></i>
+        </div>
+    </a>
 </div>

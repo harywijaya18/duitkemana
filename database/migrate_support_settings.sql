@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS support_tickets (
     user_id INT UNSIGNED NULL,
     category VARCHAR(60) NOT NULL DEFAULT 'general',
     subject VARCHAR(180) NOT NULL,
+    initial_message MEDIUMTEXT NULL,
     status ENUM('open','in_progress','resolved','closed') NOT NULL DEFAULT 'open',
     priority ENUM('low','normal','high','urgent') NOT NULL DEFAULT 'normal',
     message_count INT UNSIGNED NOT NULL DEFAULT 1,
@@ -59,8 +60,8 @@ INSERT INTO admin_settings (key_name, value_text) VALUES
 ON DUPLICATE KEY UPDATE
     value_text = VALUES(value_text);
 
-INSERT INTO support_tickets (user_id, category, subject, status, priority, message_count, last_message_at)
-SELECT u.id, 'billing', 'Tagihan bulan ini belum terbaca', 'open', 'high', 2, NOW()
+INSERT INTO support_tickets (user_id, category, subject, initial_message, status, priority, message_count, last_message_at)
+SELECT u.id, 'billing', 'Tagihan bulan ini belum terbaca', 'Saya belum melihat invoice bulan ini di akun saya.', 'open', 'high', 2, NOW()
 FROM users u
 WHERE u.email = 'demo@duitkemana.com'
   AND NOT EXISTS (
@@ -70,8 +71,8 @@ WHERE u.email = 'demo@duitkemana.com'
   )
 LIMIT 1;
 
-INSERT INTO support_tickets (user_id, category, subject, status, priority, message_count, first_response_at, last_message_at)
-SELECT u.id, 'feature_request', 'Mohon fitur kategori custom icon', 'in_progress', 'normal', 3, NOW(), NOW()
+INSERT INTO support_tickets (user_id, category, subject, initial_message, status, priority, message_count, first_response_at, last_message_at)
+SELECT u.id, 'feature_request', 'Mohon fitur kategori custom icon', 'Akan sangat membantu jika kategori bisa memakai icon custom sendiri.', 'in_progress', 'normal', 3, NOW(), NOW()
 FROM users u
 WHERE u.email = 'demo@duitkemana.com'
   AND NOT EXISTS (

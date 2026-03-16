@@ -16,6 +16,60 @@ $fmtMoney = static function ($value): string {
     return 'IDR ' . number_format((float) $value, 0, ',', '.');
 };
 
+$auditActionLabel = static function (string $action): string {
+    $map = [
+        'admin_journal_viewed' => 'Admin viewed Journal',
+        'admin_ledger_viewed' => 'Admin viewed Ledger',
+        'admin_journal_exported' => 'Admin exported Journal XLSX',
+        'admin_ledger_exported' => 'Admin exported Ledger XLSX',
+        'user_status_change_denied_self_target' => 'Denied self status change',
+        'user_status_changed' => 'User status changed',
+        'user_password_reset' => 'User password reset',
+        'user_api_tokens_revoked' => 'User API tokens revoked',
+    ];
+
+    return $map[$action] ?? str_replace('_', ' ', $action);
+};
+
+$auditDetailSummary = static function (?string $details): string {
+    if ($details === null || trim($details) === '') {
+        return '';
+    }
+
+    $decoded = json_decode($details, true);
+    if (!is_array($decoded)) {
+        return '';
+    }
+
+    $parts = [];
+    if (!empty($decoded['start_date']) && !empty($decoded['end_date'])) {
+        $parts[] = $decoded['start_date'] . ' to ' . $decoded['end_date'];
+    }
+    if (!empty($decoded['account'])) {
+        $parts[] = 'account: ' . $decoded['account'];
+    }
+    if (isset($decoded['rows'])) {
+        $parts[] = 'rows: ' . (int) $decoded['rows'];
+    }
+    if (isset($decoded['summary_rows'])) {
+        $parts[] = 'summary rows: ' . (int) $decoded['summary_rows'];
+    }
+    if (isset($decoded['detail_rows'])) {
+        $parts[] = 'detail rows: ' . (int) $decoded['detail_rows'];
+    }
+    if (isset($decoded['page'])) {
+        $parts[] = 'page: ' . (int) $decoded['page'];
+    }
+    if (isset($decoded['summary_page'])) {
+        $parts[] = 'summary page: ' . (int) $decoded['summary_page'];
+    }
+    if (isset($decoded['detail_page']) && (int) $decoded['detail_page'] > 0) {
+        $parts[] = 'detail page: ' . (int) $decoded['detail_page'];
+    }
+
+    return implode(' | ', $parts);
+};
+
 $buildPageUrl = static function (int $targetPage, string $status, string $q, string $createdFrom, string $createdTo, string $activity): string {
     $params = ['page' => max(1, $targetPage)];
     if ($status !== '') {
@@ -141,24 +195,27 @@ $buildPageUrl = static function (int $targetPage, string $status, string $q, str
                                         <?php if ($isCurrentAdmin || $isProtectedAdmin): ?>
                                             <span class="badge text-bg-secondary">Protected</span>
                                         <?php elseif ($status === 'suspended'): ?>
-                                            <form method="post" action="<?= e(base_url('/admin/users/activate')); ?>" class="d-inline"
-                                                  onsubmit="return confirm('Aktifkan kembali user ini?');">
+                                              <form method="post" action="<?= e(base_url('/admin/users/activate')); ?>" class="d-inline js-admin-confirm"
+                                                  data-confirm-title="Konfirmasi Aktivasi"
+                                                  data-confirm-message="Aktifkan kembali user ini?">
                                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
                                                 <input type="hidden" name="user_id" value="<?= e((string) $u['id']); ?>">
                                                 <button class="btn btn-outline-success btn-sm admin-icon-btn" type="submit" title="Unsuspend user" aria-label="Unsuspend user">
                                                     <i class="fa-solid fa-unlock"></i>
                                                 </button>
                                             </form>
-                                            <form method="post" action="<?= e(base_url('/admin/users/reset-password')); ?>" class="d-inline"
-                                                  onsubmit="return confirm('Reset password user ini? Password sementara akan ditampilkan sekali.');">
+                                              <form method="post" action="<?= e(base_url('/admin/users/reset-password')); ?>" class="d-inline js-admin-confirm"
+                                                  data-confirm-title="Konfirmasi Reset Password"
+                                                  data-confirm-message="Reset password user ini? Password sementara akan ditampilkan sekali.">
                                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
                                                 <input type="hidden" name="user_id" value="<?= e((string) $u['id']); ?>">
                                                 <button class="btn btn-outline-primary btn-sm admin-icon-btn" type="submit" title="Reset password" aria-label="Reset password">
                                                     <i class="fa-solid fa-key"></i>
                                                 </button>
                                             </form>
-                                            <form method="post" action="<?= e(base_url('/admin/users/reset-api-tokens')); ?>" class="d-inline"
-                                                  onsubmit="return confirm('Revoke semua API token user ini?');">
+                                              <form method="post" action="<?= e(base_url('/admin/users/reset-api-tokens')); ?>" class="d-inline js-admin-confirm"
+                                                  data-confirm-title="Konfirmasi Revoke Token"
+                                                  data-confirm-message="Revoke semua API token user ini?">
                                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
                                                 <input type="hidden" name="user_id" value="<?= e((string) $u['id']); ?>">
                                                 <button class="btn btn-outline-warning btn-sm admin-icon-btn" type="submit" title="Reset API tokens" aria-label="Reset API tokens">
@@ -166,24 +223,27 @@ $buildPageUrl = static function (int $targetPage, string $status, string $q, str
                                                 </button>
                                             </form>
                                         <?php else: ?>
-                                            <form method="post" action="<?= e(base_url('/admin/users/suspend')); ?>" class="d-inline"
-                                                  onsubmit="return confirm('Suspend user ini? User tidak akan bisa login.');">
+                                              <form method="post" action="<?= e(base_url('/admin/users/suspend')); ?>" class="d-inline js-admin-confirm"
+                                                  data-confirm-title="Konfirmasi Suspend"
+                                                  data-confirm-message="Suspend user ini? User tidak akan bisa login.">
                                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
                                                 <input type="hidden" name="user_id" value="<?= e((string) $u['id']); ?>">
                                                 <button class="btn btn-outline-danger btn-sm admin-icon-btn" type="submit" title="Suspend user" aria-label="Suspend user">
                                                     <i class="fa-solid fa-user-lock"></i>
                                                 </button>
                                             </form>
-                                            <form method="post" action="<?= e(base_url('/admin/users/reset-password')); ?>" class="d-inline"
-                                                  onsubmit="return confirm('Reset password user ini? Password sementara akan ditampilkan sekali.');">
+                                              <form method="post" action="<?= e(base_url('/admin/users/reset-password')); ?>" class="d-inline js-admin-confirm"
+                                                  data-confirm-title="Konfirmasi Reset Password"
+                                                  data-confirm-message="Reset password user ini? Password sementara akan ditampilkan sekali.">
                                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
                                                 <input type="hidden" name="user_id" value="<?= e((string) $u['id']); ?>">
                                                 <button class="btn btn-outline-primary btn-sm admin-icon-btn" type="submit" title="Reset password" aria-label="Reset password">
                                                     <i class="fa-solid fa-key"></i>
                                                 </button>
                                             </form>
-                                            <form method="post" action="<?= e(base_url('/admin/users/reset-api-tokens')); ?>" class="d-inline"
-                                                  onsubmit="return confirm('Revoke semua API token user ini?');">
+                                              <form method="post" action="<?= e(base_url('/admin/users/reset-api-tokens')); ?>" class="d-inline js-admin-confirm"
+                                                  data-confirm-title="Konfirmasi Revoke Token"
+                                                  data-confirm-message="Revoke semua API token user ini?">
                                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
                                                 <input type="hidden" name="user_id" value="<?= e((string) $u['id']); ?>">
                                                 <button class="btn btn-outline-warning btn-sm admin-icon-btn" type="submit" title="Reset API tokens" aria-label="Reset API tokens">
@@ -215,7 +275,7 @@ $buildPageUrl = static function (int $targetPage, string $status, string $q, str
         <div class="admin-panel">
             <div class="admin-panel-head">
                 <h5 class="mb-0">Recent Audit Logs</h5>
-                <span class="badge text-bg-light">12 latest</span>
+                <span class="badge text-bg-light">20 latest</span>
             </div>
             <div class="row g-2">
                 <?php if (empty($auditLogs)): ?>
@@ -226,13 +286,17 @@ $buildPageUrl = static function (int $targetPage, string $status, string $q, str
                         <div class="admin-log-item h-100">
                             <div class="d-flex justify-content-between align-items-start gap-2">
                                 <div>
-                                    <div class="fw-semibold"><?= e((string) ($log['action'] ?? 'action')); ?></div>
+                                    <div class="fw-semibold"><?= e($auditActionLabel((string) ($log['action'] ?? 'action'))); ?></div>
                                     <small class="text-muted">
                                         admin: <?= e((string) ($log['admin_email'] ?? '-')); ?>
                                         <?php if (!empty($log['target_email'])): ?>
                                             • target: <?= e((string) $log['target_email']); ?>
                                         <?php endif; ?>
                                     </small>
+                                    <?php $detailSummary = $auditDetailSummary((string) ($log['details'] ?? '')); ?>
+                                    <?php if ($detailSummary !== ''): ?>
+                                        <div><small class="text-muted"><?= e($detailSummary); ?></small></div>
+                                    <?php endif; ?>
                                 </div>
                                 <small class="text-muted"><?= e(date('d M H:i', strtotime((string) $log['created_at']))); ?></small>
                             </div>
@@ -244,3 +308,64 @@ $buildPageUrl = static function (int $targetPage, string $status, string $q, str
         </div>
     </div>
 </section>
+
+<div class="modal fade" id="adminActionConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adminActionConfirmTitle">Konfirmasi Aksi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="adminActionConfirmMessage">Anda yakin ingin melanjutkan aksi ini?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><?= e(t('Cancel')); ?></button>
+                <form method="post" id="adminActionConfirmForm" class="m-0">
+                    <button type="submit" class="btn btn-danger">Lanjutkan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var modalEl = document.getElementById('adminActionConfirmModal');
+        if (!modalEl || typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        var modal = new bootstrap.Modal(modalEl);
+        var titleEl = document.getElementById('adminActionConfirmTitle');
+        var messageEl = document.getElementById('adminActionConfirmMessage');
+        var confirmForm = document.getElementById('adminActionConfirmForm');
+
+        document.querySelectorAll('form.js-admin-confirm').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                var title = form.getAttribute('data-confirm-title') || 'Konfirmasi Aksi';
+                var message = form.getAttribute('data-confirm-message') || 'Anda yakin ingin melanjutkan aksi ini?';
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                confirmForm.setAttribute('action', form.getAttribute('action') || '');
+
+                confirmForm.querySelectorAll('input[type="hidden"]').forEach(function (node) {
+                    node.remove();
+                });
+
+                form.querySelectorAll('input[type="hidden"]').forEach(function (input) {
+                    var clone = document.createElement('input');
+                    clone.type = 'hidden';
+                    clone.name = input.name;
+                    clone.value = input.value;
+                    confirmForm.insertBefore(clone, confirmForm.lastElementChild);
+                });
+
+                modal.show();
+            });
+        });
+    })();
+</script>

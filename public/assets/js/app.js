@@ -18,38 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    initThemeToggle();
     initReportFilter();
     initCharts();
 });
-
-// ──────────────────────────────────────────────
-//  Dark mode
-// ──────────────────────────────────────────────
-function initThemeToggle() {
-    const btn = document.getElementById('themeToggleBtn');
-    if (!btn) return;
-
-    function applyTheme(theme) {
-        document.documentElement.setAttribute('data-bs-theme', theme);
-        document.documentElement.setAttribute('data-theme', theme);
-        const icon = btn.querySelector('i');
-        if (icon) {
-            icon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-        }
-    }
-
-    btn.addEventListener('click', () => {
-        const current = localStorage.getItem('dk_theme') || 'light';
-        const next = current === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('dk_theme', next);
-        applyTheme(next);
-    });
-
-    // Sync icon with current saved theme
-    const saved = localStorage.getItem('dk_theme') || 'light';
-    applyTheme(saved);
-}
 
 function initReportFilter() {
     const filterSelect = document.getElementById('filterSelect');

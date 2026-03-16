@@ -16,6 +16,8 @@ Last updated: 2026-03-16
 - [x] User Management functional module (v1: table + filter + suspend/unsuspend)
 - [x] Subscription & Billing functional module
 - [x] Operations Monitor functional module (v1)
+- [x] Admin Journal user drilldown module
+- [x] Admin Ledger user drilldown module
 - [x] Product Analytics functional module
 - [x] Support Center functional module
 - [x] Settings functional module
@@ -43,11 +45,19 @@ Last updated: 2026-03-16
 - Route: /admin/analytics
 - Purpose: retention, feature adoption, funnel onboarding.
 
-6. Support Center
+6. Journal
+- Route: /admin/journal
+- Purpose: pilih user lalu buka jurnal akuntansi per user.
+
+7. Ledger
+- Route: /admin/ledger
+- Purpose: pilih user lalu buka buku besar per user.
+
+8. Support Center
 - Route: /admin/support
 - Purpose: tiket, feedback, pengumuman user segment.
 
-7. Settings
+9. Settings
 - Route: /admin/settings
 - Purpose: feature flags, global config, security controls.
 
@@ -72,7 +82,7 @@ Last updated: 2026-03-16
 ### Operations Monitor
 - [x] Recurring generation coverage.
 - [x] Failed jobs and retry queue (placeholder-ready).
-- [ ] API health panel (latency, error ratio).
+- [x] API health panel (latency, error ratio).
 - [x] Data consistency checks.
 
 ### Product Analytics
@@ -107,9 +117,9 @@ Last updated: 2026-03-16
 ## Non-Functional Requirements
 
 - [x] Admin pages are desktop-first and optimized for >= 1200px width.
-- [ ] Every admin action touching user state must be logged.
-- [ ] Sensitive actions require confirmation modal.
-- [ ] KPI queries should be paginated/cached for large tenant volume.
+- [x] Every admin action touching user state must be logged.
+- [x] Sensitive actions require confirmation modal.
+- [x] KPI queries should be paginated/cached for large tenant volume.
 
 ## Open Items (User Management v1)
 

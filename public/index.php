@@ -24,6 +24,10 @@ $router->get('/admin/transactions', [AdminMvpController::class, 'transactions'])
 $router->get('/admin/subscriptions', [AdminMvpController::class, 'subscriptions']);
 $router->get('/admin/subscriptions/export', [AdminMvpController::class, 'exportSubscriptions']);
 $router->get('/admin/operations', [AdminMvpController::class, 'operations']);
+$router->get('/admin/journal', [AdminMvpController::class, 'journal']);
+$router->get('/admin/ledger', [AdminMvpController::class, 'ledger']);
+$router->get('/admin/journal/export', [AdminMvpController::class, 'exportJournal']);
+$router->get('/admin/ledger/export', [AdminMvpController::class, 'exportLedger']);
 $router->get('/admin/analytics', [AdminMvpController::class, 'analytics']);
 $router->get('/admin/support', [AdminMvpController::class, 'support']);
 $router->get('/admin/settings', [AdminMvpController::class, 'settings']);
@@ -48,6 +52,7 @@ $router->post('/categories/delete', [CategoryController::class, 'delete']);
 $router->get('/budget', [BudgetController::class, 'index']);
 $router->post('/budget/save', [BudgetController::class, 'save']);
 $router->get('/budget/goals', [BudgetController::class, 'goals']);
+$router->post('/budget/goals/copy-previous', [BudgetController::class, 'copyPreviousGoals']);
 $router->post('/budget/goals/save', [BudgetController::class, 'saveGoal']);
 $router->post('/budget/goals/delete', [BudgetController::class, 'deleteGoal']);
 
@@ -55,10 +60,18 @@ $router->get('/reports', [ReportController::class, 'index']);
 $router->get('/reports/export', [ReportController::class, 'export']);
 $router->get('/reports/charts', [ReportController::class, 'charts']);
 
+$router->get('/journal', [AccountingController::class, 'journal']);
+$router->get('/ledger', [AccountingController::class, 'ledger']);
+$router->get('/journal/export', [AccountingController::class, 'exportJournalXlsx']);
+$router->get('/ledger/export', [AccountingController::class, 'exportLedgerXlsx']);
+
 $router->get('/anomalies', [AnomalyController::class, 'index']);
 
 $router->get('/profile', [ProfileController::class, 'index']);
+$router->get('/profile/support-center', [ProfileController::class, 'supportCenter']);
+$router->get('/profile/about-app', [ProfileController::class, 'aboutApp']);
 $router->post('/profile/update', [ProfileController::class, 'update']);
+$router->post('/profile/support-ticket', [ProfileController::class, 'submitSupportTicket']);
 
 $router->get('/notifications', [NotificationController::class, 'index']);
 $router->post('/notifications/read', [NotificationController::class, 'markRead']);

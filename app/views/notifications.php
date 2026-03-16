@@ -18,7 +18,7 @@ $unreadCount = count(array_filter($notifications, fn($n) => !$n['is_read']));
         <form method="post" action="<?= e(base_url('/notifications/read-all')); ?>">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
             <button class="btn btn-sm btn-outline-secondary">
-                <i class="fa-solid fa-check-double me-1"></i>Tandai semua dibaca
+                <i class="fa-solid fa-check-double me-1"></i><?= e(t('Mark all as read')); ?>
             </button>
         </form>
     <?php endif; ?>
@@ -27,7 +27,7 @@ $unreadCount = count(array_filter($notifications, fn($n) => !$n['is_read']));
 <?php if (empty($notifications)): ?>
     <div class="soft-card text-center py-4 text-muted">
         <i class="fa-solid fa-bell-slash fa-2x mb-2 d-block"></i>
-        Tidak ada notifikasi.
+        <?= e(t('No notifications.')); ?>
     </div>
 <?php else: ?>
     <div class="vstack gap-2">
@@ -49,7 +49,7 @@ $unreadCount = count(array_filter($notifications, fn($n) => !$n['is_read']));
                             <form method="post" action="<?= e(base_url('/notifications/read')); ?>">
                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
                                 <input type="hidden" name="id"         value="<?= (int) $notif['id']; ?>">
-                                <button class="btn btn-xs py-0 px-1 btn-outline-secondary small" title="Tandai dibaca">
+                                <button class="btn btn-xs py-0 px-1 btn-outline-secondary small" title="<?= e(t('Mark as read')); ?>">
                                     <i class="fa-solid fa-check"></i>
                                 </button>
                             </form>

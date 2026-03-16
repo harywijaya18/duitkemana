@@ -14,7 +14,12 @@ class AdminDashboardController extends Controller
         require_admin();
 
         $user = auth_user();
-        $snapshot = $this->metricsModel->dashboardSnapshot(6);
+        $months = max(3, min(12, (int) ($_GET['months'] ?? 6)));
+        $topPage = max(1, (int) ($_GET['top_page'] ?? 1));
+        $recentPage = max(1, (int) ($_GET['recent_page'] ?? 1));
+        $perPage = max(5, min(50, (int) ($_GET['per_page'] ?? 10)));
+
+        $snapshot = $this->metricsModel->dashboardSnapshot($months, $topPage, $recentPage, $perPage);
 
         $viewFile = APP_PATH . '/views/admin/dashboard.php';
         if (!file_exists($viewFile)) {

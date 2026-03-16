@@ -1,5 +1,8 @@
 <?php
-$monthNames  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+$isEnglish = current_language() === 'en';
+$monthNames  = $isEnglish
+    ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    : ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 $monthName   = $monthNames[$month - 1] ?? '';
 $severityMap = [
     'danger'  => ['bg' => 'bg-danger-subtle',  'text' => 'text-danger',  'icon' => 'fa-circle-exclamation'],
@@ -7,16 +10,16 @@ $severityMap = [
     'info'    => ['bg' => 'bg-info-subtle',    'text' => 'text-info',    'icon' => 'fa-circle-info'],
 ];
 $typeLabels  = [
-    'category_spike'   => 'Lonjakan Kategori',
-    'large_transaction'=> 'Transaksi Besar',
-    'high_frequency'   => 'Frekuensi Tinggi',
-    'new_category'     => 'Kategori Baru',
+    'category_spike'   => t('Category Spike'),
+    'large_transaction'=> t('Large Transaction'),
+    'high_frequency'   => t('High Frequency'),
+    'new_category'     => t('New Category'),
 ];
 ?>
 <section class="mb-3 d-flex align-items-center justify-content-between">
     <div>
         <h4 class="mb-0"><i class="fa-solid fa-robot me-2 text-primary"></i><?= e(t('Spending Anomalies')); ?></h4>
-        <small class="text-muted">Analisis cerdas pengeluaran — <?= e($monthName . ' ' . $year); ?></small>
+        <small class="text-muted"><?= e(t('Smart spending analysis — :period', ['period' => $monthName . ' ' . $year])); ?></small>
     </div>
     <a href="<?= e(base_url('/reports')); ?>" class="btn btn-sm btn-outline-secondary">
         <i class="fa-solid fa-chart-pie me-1"></i><?= e(t('Reports')); ?>
@@ -48,7 +51,7 @@ $typeLabels  = [
         <div class="summary-card summary-card--blue p-3">
             <div class="summary-card-head">
                 <div class="summary-icon"><i class="fa-solid fa-receipt"></i></div>
-                <div class="summary-card-copy"><span>Total Pengeluaran</span><small><?= e($monthName); ?></small></div>
+                <div class="summary-card-copy"><span><?= e(t('Total Expense')); ?></span><small><?= e($monthName); ?></small></div>
             </div>
             <div class="summary-card-bodyline">
                 <p class="summary-card-amount fw-bold"><?= e(currency_format((float) $stats['total'])); ?></p>
@@ -59,7 +62,7 @@ $typeLabels  = [
         <div class="summary-card <?= count($anomalies) ? 'summary-card--warning' : 'summary-card--cyan'; ?> p-3">
             <div class="summary-card-head">
                 <div class="summary-icon"><i class="fa-solid fa-robot"></i></div>
-                <div class="summary-card-copy"><span>Anomali Terdeteksi</span><small><?= (int) $stats['tx_count']; ?> transaksi</small></div>
+                <div class="summary-card-copy"><span><?= e(t('Anomalies Detected')); ?></span><small><?= (int) $stats['tx_count']; ?> <?= e(t('transactions')); ?></small></div>
             </div>
             <div class="summary-card-bodyline">
                 <p class="summary-card-amount fw-bold"><?= count($anomalies); ?></p>
@@ -71,8 +74,8 @@ $typeLabels  = [
 <?php if (empty($anomalies)): ?>
     <div class="soft-card text-center py-4 text-success">
         <i class="fa-solid fa-circle-check fa-2x mb-2"></i>
-        <p class="mb-0 fw-semibold">Tidak ada anomali terdeteksi</p>
-        <small class="text-muted">Pengeluaran bulan ini terlihat normal 🎉</small>
+        <p class="mb-0 fw-semibold"><?= e(t('No anomalies detected')); ?></p>
+        <small class="text-muted"><?= e(t('Your spending looks normal this month.')); ?></small>
     </div>
 <?php else: ?>
     <div class="vstack gap-2">
@@ -105,6 +108,6 @@ $typeLabels  = [
 
     <p class="text-muted small text-center mt-3">
         <i class="fa-solid fa-circle-info me-1"></i>
-        Analisis berbasis pola histori pengeluaran kamu. Bukan keputusan finansial profesional.
+        <?= e(t('Pattern-based analysis only. Not professional financial advice.')); ?>
     </p>
 <?php endif; ?>

@@ -2,14 +2,25 @@
 $kpis = $snapshot['kpis'] ?? [];
 $recurring = $snapshot['recurring'] ?? [];
 $trend = $snapshot['trend'] ?? [];
-$topSpenders = $snapshot['top_spenders'] ?? [];
-$recentUsers = $snapshot['recent_users'] ?? [];
+$topSpendersBlock = $snapshot['top_spenders'] ?? ['items' => [], 'page' => 1, 'total_pages' => 1];
+$recentUsersBlock = $snapshot['recent_users'] ?? ['items' => [], 'page' => 1, 'total_pages' => 1];
+$topSpenders = $topSpendersBlock['items'] ?? [];
+$recentUsers = $recentUsersBlock['items'] ?? [];
+$months = max(3, min(12, (int) ($_GET['months'] ?? 6)));
 
 $fmtInt = static function ($value): string {
     return number_format((int) $value, 0, ',', '.');
 };
 $fmtMoney = static function ($value): string {
     return 'IDR ' . number_format((float) $value, 0, ',', '.');
+};
+
+$dashboardUrl = static function (int $topPage, int $recentPage, int $months): string {
+    return base_url('/admin/dashboard') . '?' . http_build_query([
+        'top_page' => max(1, $topPage),
+        'recent_page' => max(1, $recentPage),
+        'months' => max(3, min(12, $months)),
+    ]);
 };
 ?>
 
@@ -150,6 +161,7 @@ $fmtMoney = static function ($value): string {
         <div class="admin-panel h-100">
             <div class="admin-panel-head">
                 <h5 class="mb-0">Top Spenders Bulan Ini</h5>
+                <span class="badge text-bg-light">Page <?= e((string) ($topSpendersBlock['page'] ?? 1)); ?>/<?= e((string) ($topSpendersBlock['total_pages'] ?? 1)); ?></span>
             </div>
             <div class="table-responsive">
                 <table class="table table-sm align-middle admin-table mb-0">
@@ -178,6 +190,15 @@ $fmtMoney = static function ($value): string {
                     </tbody>
                 </table>
             </div>
+            <?php if (($topSpendersBlock['total_pages'] ?? 1) > 1): ?>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <a class="btn btn-sm btn-outline-secondary <?= ($topSpendersBlock['page'] ?? 1) <= 1 ? 'disabled' : ''; ?>"
+                       href="<?= e($dashboardUrl((int) ($topSpendersBlock['page'] ?? 1) - 1, (int) ($recentUsersBlock['page'] ?? 1), $months)); ?>">Prev</a>
+                    <small class="text-muted">Page <?= e((string) ($topSpendersBlock['page'] ?? 1)); ?> of <?= e((string) ($topSpendersBlock['total_pages'] ?? 1)); ?></small>
+                    <a class="btn btn-sm btn-outline-secondary <?= ($topSpendersBlock['page'] ?? 1) >= ($topSpendersBlock['total_pages'] ?? 1) ? 'disabled' : ''; ?>"
+                       href="<?= e($dashboardUrl((int) ($topSpendersBlock['page'] ?? 1) + 1, (int) ($recentUsersBlock['page'] ?? 1), $months)); ?>">Next</a>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -185,6 +206,7 @@ $fmtMoney = static function ($value): string {
         <div class="admin-panel h-100">
             <div class="admin-panel-head">
                 <h5 class="mb-0">Recent Signups</h5>
+                <span class="badge text-bg-light">Page <?= e((string) ($recentUsersBlock['page'] ?? 1)); ?>/<?= e((string) ($recentUsersBlock['total_pages'] ?? 1)); ?></span>
             </div>
             <div class="table-responsive">
                 <table class="table table-sm align-middle admin-table mb-0">
@@ -209,6 +231,15 @@ $fmtMoney = static function ($value): string {
                     </tbody>
                 </table>
             </div>
+            <?php if (($recentUsersBlock['total_pages'] ?? 1) > 1): ?>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <a class="btn btn-sm btn-outline-secondary <?= ($recentUsersBlock['page'] ?? 1) <= 1 ? 'disabled' : ''; ?>"
+                       href="<?= e($dashboardUrl((int) ($topSpendersBlock['page'] ?? 1), (int) ($recentUsersBlock['page'] ?? 1) - 1, $months)); ?>">Prev</a>
+                    <small class="text-muted">Page <?= e((string) ($recentUsersBlock['page'] ?? 1)); ?> of <?= e((string) ($recentUsersBlock['total_pages'] ?? 1)); ?></small>
+                    <a class="btn btn-sm btn-outline-secondary <?= ($recentUsersBlock['page'] ?? 1) >= ($recentUsersBlock['total_pages'] ?? 1) ? 'disabled' : ''; ?>"
+                       href="<?= e($dashboardUrl((int) ($topSpendersBlock['page'] ?? 1), (int) ($recentUsersBlock['page'] ?? 1) + 1, $months)); ?>">Next</a>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

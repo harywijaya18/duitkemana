@@ -1,5 +1,7 @@
 storage/uploads/*
 !storage/uploads/.gitkeep
+storage/cache/*
+!storage/cache/.gitkeep
 
 .vscode/
 .idea/

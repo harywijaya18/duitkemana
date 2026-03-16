@@ -78,6 +78,7 @@ CREATE TABLE support_tickets (
     user_id INT UNSIGNED NULL,
     category VARCHAR(60) NOT NULL DEFAULT 'general',
     subject VARCHAR(180) NOT NULL,
+    initial_message MEDIUMTEXT NULL,
     status ENUM('open','in_progress','resolved','closed') NOT NULL DEFAULT 'open',
     priority ENUM('low','normal','high','urgent') NOT NULL DEFAULT 'normal',
     message_count INT UNSIGNED NOT NULL DEFAULT 1,

@@ -60,6 +60,23 @@ $totalSpent = array_sum(array_column($goals, 'spent'));
     </div>
 </div>
 
+<div class="soft-card mb-3 py-2">
+    <div class="d-flex align-items-center justify-content-between gap-2">
+        <small class="text-muted">
+            <i class="fa-solid fa-copy me-1"></i><?= e(t('Copy goals from previous month to this period.')); ?>
+        </small>
+        <form method="post" action="<?= e(base_url('/budget/goals/copy-previous')); ?>"
+              onsubmit="return confirm('<?= e(t('Copy goals from previous month? Existing goals will not be overwritten.')); ?>');">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
+            <input type="hidden" name="month" value="<?= (int) $month; ?>">
+            <input type="hidden" name="year" value="<?= (int) $year; ?>">
+            <button class="btn btn-sm btn-outline-primary" type="submit">
+                <i class="fa-solid fa-copy me-1"></i><?= e(t('Copy From Previous Month')); ?>
+            </button>
+        </form>
+    </div>
+</div>
+
 <!-- Goal list -->
 <?php if (!empty($goals)): ?>
     <div class="vstack gap-2 mb-3">
@@ -75,7 +92,7 @@ $totalSpent = array_sum(array_column($goals, 'spent'));
                     <?= e($goal['category_name']); ?>
                 </span>
                 <form method="post" action="<?= e(base_url('/budget/goals/delete')); ?>"
-                      onsubmit="return confirm('Hapus goal ini?')">
+                        onsubmit="return confirm('<?= e(t('Delete this transaction?')); ?>')">
                     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
                     <input type="hidden" name="goal_id" value="<?= (int) $goal['id']; ?>">
                     <input type="hidden" name="month"   value="<?= (int) $month; ?>">
@@ -87,13 +104,13 @@ $totalSpent = array_sum(array_column($goals, 'spent'));
                 <div class="progress-bar <?= $barCls; ?>" style="width:<?= round($pct); ?>%"></div>
             </div>
             <div class="d-flex justify-content-between small text-muted">
-                <span><?= e(currency_format((float) $goal['spent'])); ?> dipakai</span>
-                <span>Target: <?= e(currency_format((float) $goal['goal_amount'])); ?></span>
+                <span><?= e(currency_format((float) $goal['spent'])); ?> <?= e(t('used')); ?></span>
+                <span><?= e(t('Target')); ?>: <?= e(currency_format((float) $goal['goal_amount'])); ?></span>
             </div>
             <?php if ($over): ?>
                 <div class="badge bg-danger-subtle text-danger mt-1">
                     <i class="fa-solid fa-triangle-exclamation me-1"></i>
-                    Melebihi target +<?= e(currency_format((float) $goal['spent'] - (float) $goal['goal_amount'])); ?>
+                    <?= e(t('Exceeds target by :amt', ['amt' => '+' . currency_format((float) $goal['spent'] - (float) $goal['goal_amount'])])); ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -101,7 +118,7 @@ $totalSpent = array_sum(array_column($goals, 'spent'));
     </div>
 <?php else: ?>
     <div class="alert alert-secondary text-center mb-3">
-        <i class="fa-solid fa-bullseye me-2"></i>Belum ada goal untuk periode ini.
+        <i class="fa-solid fa-bullseye me-2"></i><?= e(t('No goals for this period yet.')); ?>
     </div>
 <?php endif; ?>
 
@@ -115,7 +132,7 @@ $totalSpent = array_sum(array_column($goals, 'spent'));
         <div>
             <label class="form-label small"><?= e(t('Category')); ?></label>
             <select name="category_id" class="form-select form-select-sm" required>
-                <option value="">— Pilih kategori —</option>
+                <option value=""><?= e(t('Select category option')); ?></option>
                 <?php foreach ($categories as $cat): ?>
                     <option value="<?= (int) $cat['id']; ?>"><?= e($cat['name']); ?></option>
                 <?php endforeach; ?>

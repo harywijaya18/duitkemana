@@ -70,6 +70,10 @@ class BudgetController extends Controller
         $month = (int) ($_GET['month'] ?? date('n'));
         $year  = (int) ($_GET['year']  ?? date('Y'));
 
+        if (!$this->goalModel->isAvailable()) {
+            flash('error', t('Goal feature not ready. Run database migration: database/migrate_budget_goals.sql'));
+        }
+
         $goals      = $this->goalModel->getGoalsByPeriod($user['id'], $month, $year);
         $categories = $this->goalModel->getUserCategories($user['id']);
 
@@ -99,7 +103,12 @@ class BudgetController extends Controller
             redirect('/budget/goals?month=' . $month . '&year=' . $year);
         }
 
-        $this->goalModel->setGoal($user['id'], $categoryId, $month, $year, $amount);
+        $saved = $this->goalModel->setGoal($user['id'], $categoryId, $month, $year, $amount);
+        if (!$saved) {
+            flash('error', t('Failed to save goal. Ensure budget_goals table exists (run migrate_budget_goals.sql).'));
+            redirect('/budget/goals?month=' . $month . '&year=' . $year);
+        }
+
         flash('success', t('Budget goal saved.'));
         redirect('/budget/goals?month=' . $month . '&year=' . $year);
     }
@@ -116,9 +125,54 @@ class BudgetController extends Controller
         $year      = (int) ($_POST['year']    ?? date('Y'));
 
         if ($goalId > 0) {
-            $this->goalModel->deleteGoal($goalId, $user['id']);
-            flash('success', t('Goal removed.'));
+            $deleted = $this->goalModel->deleteGoal($goalId, $user['id']);
+            if ($deleted) {
+                flash('success', t('Goal removed.'));
+            } else {
+                flash('error', t('Failed to delete goal. Ensure budget_goals table exists.'));
+            }
         }
+        redirect('/budget/goals?month=' . $month . '&year=' . $year);
+    }
+
+    public function copyPreviousGoals(): void
+    {
+        require_auth();
+        if (!verify_csrf()) {
+            redirect('/budget/goals');
+        }
+
+        $user = auth_user();
+        $month = (int) ($_POST['month'] ?? date('n'));
+        $year = (int) ($_POST['year'] ?? date('Y'));
+
+        if ($month < 1 || $month > 12 || $year < 2000) {
+            flash('error', t('Goal period is invalid.'));
+            redirect('/budget/goals');
+        }
+
+        if (!$this->goalModel->isAvailable()) {
+            flash('error', t('Goal feature not ready. Run database migration: database/migrate_budget_goals.sql'));
+            redirect('/budget/goals?month=' . $month . '&year=' . $year);
+        }
+
+        $result = $this->goalModel->copyFromPreviousPeriod((int) $user['id'], $month, $year);
+        if ($result['source_count'] === 0) {
+            flash('error', t('No goals found in previous month to copy.'));
+            redirect('/budget/goals?month=' . $month . '&year=' . $year);
+        }
+
+        if ($result['skipped'] > 0) {
+            flash('success', t(':copied goal(s) copied. :skipped skipped because already exist.', [
+                'copied' => (string) $result['copied'],
+                'skipped' => (string) $result['skipped'],
+            ]));
+        } else {
+            flash('success', t(':copied goal(s) copied.', [
+                'copied' => (string) $result['copied'],
+            ]));
+        }
+
         redirect('/budget/goals?month=' . $month . '&year=' . $year);
     }
 }

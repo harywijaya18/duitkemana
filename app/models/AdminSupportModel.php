@@ -77,7 +77,7 @@ class AdminSupportModel extends Model
         $countStmt->execute($params);
         $total = (int) $countStmt->fetchColumn();
 
-        $sql = "SELECT t.id, t.user_id, t.category, t.subject, t.status, t.priority,
+        $sql = "SELECT t.id, t.user_id, t.category, t.subject, t.initial_message, t.status, t.priority,
                        t.last_message_at, t.created_at,
                        u.name AS user_name, u.email AS user_email
                 FROM support_tickets t
