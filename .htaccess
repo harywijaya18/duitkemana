@@ -1,0 +1,11 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Keep clean URL /budget/assets/* while actual files stay in /public/assets/*
+RewriteRule ^assets/(.*)$ public/assets/$1 [L,NC]
+
+# Front-controller routing from project root
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

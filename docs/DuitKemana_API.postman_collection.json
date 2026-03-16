@@ -1,0 +1,135 @@
+{
+  "info": {
+    "name": "DuitKemana API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost/budget/public/api" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Demo User\",\n  \"email\": \"demo@mail.com\",\n  \"password\": \"secret123\",\n  \"currency\": \"IDR\",\n  \"device_name\": \"android\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"demo@mail.com\",\n  \"password\": \"secret123\",\n  \"device_name\": \"android\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Transactions List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/transactions"
+      }
+    },
+    {
+      "name": "Transactions Upload Receipt",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/transactions/upload-receipt",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "receipt", "type": "file", "src": "" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Transactions Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/transactions/create",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"category_id\": 1,\n  \"amount\": 25000,\n  \"payment_method_id\": 1,\n  \"description\": \"Makan siang\",\n  \"receipt_image\": \"\",\n  \"transaction_date\": \"2026-03-15\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Categories List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/categories"
+      }
+    },
+    {
+      "name": "Payment Methods",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/payment-methods"
+      }
+    },
+    {
+      "name": "Budget Save",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/budget/save",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"month\": 3,\n  \"year\": 2026,\n  \"amount\": 5000000\n}"
+        }
+      }
+    },
+    {
+      "name": "Reports Summary",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/reports/summary?filter=monthly"
+      }
+    },
+    {
+      "name": "Profile Me",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/profile/me"
+      }
+    },
+    {
+      "name": "Profile Update",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/profile/update",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Demo User Updated\",\n  \"currency\": \"IDR\"\n}"
+        }
+      }
+    }
+  ]
+}

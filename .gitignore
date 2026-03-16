@@ -1,0 +1,12 @@
+storage/uploads/*
+!storage/uploads/.gitkeep
+
+.vscode/
+.idea/
+
+vendor/
+node_modules/
+
+*.log
+Thumbs.db
+Desktop.ini
