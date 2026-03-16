@@ -16,9 +16,7 @@ function app_log(string $message): void
 
 function redirect(string $path): void
 {
-    app_log('[redirect] path=' . $path . ' session_id=' . session_id() . ' user=' . (isset($_SESSION['user']) ? $_SESSION['user']['email'] : 'none'));
     session_write_close();
-    app_log('[redirect] after session_write_close');
     header('Location: ' . base_url($path));
     exit;
 }
