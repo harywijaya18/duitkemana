@@ -72,14 +72,19 @@ $adminMenu = [
 
         <div class="admin-layout-grid">
             <aside class="admin-sidebar">
-                <div class="admin-sidebar-title">Admin Navigation</div>
+                <div class="admin-sidebar-head">
+                    <div class="admin-sidebar-title">Admin Navigation</div>
+                    <button type="button" class="admin-sidebar-toggle" id="adminSidebarToggle" aria-label="Toggle sidebar" title="Minimize sidebar">
+                        <i class="fa-solid fa-angles-left" id="adminSidebarToggleIcon"></i>
+                    </button>
+                </div>
                 <nav class="admin-sidebar-nav">
                     <?php foreach ($adminMenu as $item): ?>
                         <?php
                         $isActive = $path === parse_url($item['href'], PHP_URL_PATH)
                             || ($item['key'] === 'dashboard' && $path === '/admin');
                         ?>
-                        <a href="<?= e($item['href']); ?>" class="admin-nav-link <?= $isActive ? 'active' : ''; ?>">
+                        <a href="<?= e($item['href']); ?>" class="admin-nav-link <?= $isActive ? 'active' : ''; ?>" title="<?= e($item['label']); ?>">
                             <i class="fa-solid <?= e($item['icon']); ?>"></i>
                             <span><?= e($item['label']); ?></span>
                         </a>

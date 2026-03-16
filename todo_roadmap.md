@@ -71,10 +71,10 @@ Week 1
 3. Build Operations Monitor with recurring health and failed jobs list.
 
 Week 2
-1. Build Subscription & Billing list with status filters and export CSV.
-2. Build Product Analytics basic trends (retention and adoption v1).
-3. Build Support Center basic ticket list + announcement draft.
-4. Build Settings page for feature flags and admin security controls.
+1. [x] Build Subscription & Billing list with status filters and export Excel.
+2. [x] Build Product Analytics basic trends (retention and adoption v1).
+3. [x] Build Support Center basic ticket list + announcement draft.
+4. [x] Build Settings page for feature flags and admin security controls.
 
 ## Notes
 

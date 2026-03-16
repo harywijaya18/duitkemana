@@ -35,3 +35,39 @@ INSERT INTO transactions (user_id, category_id, amount, payment_method_id, descr
 (1, (SELECT id FROM categories WHERE user_id=1 AND name='Food' LIMIT 1),        20000,  1, 'Sarapan nasi uduk',    '2026-03-12'),
 (1, (SELECT id FROM categories WHERE user_id=1 AND name='Transport' LIMIT 1),   15000,  5, 'Grab ke kantor',       '2026-03-11'),
 (1, (SELECT id FROM categories WHERE user_id=1 AND name='Food' LIMIT 1),        45000,  4, 'Makan malam resto',    '2026-03-10');
+
+-- Demo Subscription & Billing Data
+INSERT INTO plans (code, name, price_monthly, currency, is_active) VALUES
+('free', 'Free', 0, 'IDR', 1),
+('pro', 'Pro', 49000, 'IDR', 1),
+('business', 'Business', 149000, 'IDR', 1)
+ON DUPLICATE KEY UPDATE
+		name = VALUES(name),
+		price_monthly = VALUES(price_monthly),
+		currency = VALUES(currency),
+		is_active = VALUES(is_active);
+
+INSERT INTO subscriptions (user_id, plan_id, status, billing_cycle, current_period_start, current_period_end, trial_ends_at)
+VALUES
+(1, (SELECT id FROM plans WHERE code='pro' LIMIT 1), 'active', 'monthly', DATE_FORMAT(CURDATE(), '%Y-%m-01'), LAST_DAY(CURDATE()), NULL)
+ON DUPLICATE KEY UPDATE
+		plan_id = VALUES(plan_id),
+		status = VALUES(status),
+		billing_cycle = VALUES(billing_cycle),
+		current_period_start = VALUES(current_period_start),
+		current_period_end = VALUES(current_period_end),
+		trial_ends_at = VALUES(trial_ends_at);
+
+INSERT INTO invoices (subscription_id, invoice_no, amount, currency, status, due_date, paid_at)
+SELECT s.id,
+			 CONCAT('INV-', DATE_FORMAT(NOW(), '%Y%m'), '-0001'),
+			 49000,
+			 'IDR',
+			 'paid',
+			 LAST_DAY(CURDATE()),
+			 NOW()
+FROM subscriptions s
+WHERE s.user_id = 1
+	AND NOT EXISTS (
+		SELECT 1 FROM invoices i WHERE i.invoice_no = CONCAT('INV-', DATE_FORMAT(NOW(), '%Y%m'), '-0001')
+	);

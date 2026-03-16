@@ -21,10 +21,16 @@ $router->get('/admin', [AdminDashboardController::class, 'index']);
 $router->get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 $router->get('/admin/users', [AdminMvpController::class, 'users']);
 $router->get('/admin/subscriptions', [AdminMvpController::class, 'subscriptions']);
+$router->get('/admin/subscriptions/export', [AdminMvpController::class, 'exportSubscriptions']);
 $router->get('/admin/operations', [AdminMvpController::class, 'operations']);
 $router->get('/admin/analytics', [AdminMvpController::class, 'analytics']);
 $router->get('/admin/support', [AdminMvpController::class, 'support']);
 $router->get('/admin/settings', [AdminMvpController::class, 'settings']);
+$router->post('/admin/settings/save', [AdminMvpController::class, 'saveSettings']);
+$router->post('/admin/users/suspend', [AdminMvpController::class, 'suspendUser']);
+$router->post('/admin/users/activate', [AdminMvpController::class, 'activateUser']);
+$router->post('/admin/users/reset-password', [AdminMvpController::class, 'resetUserPassword']);
+$router->post('/admin/users/reset-api-tokens', [AdminMvpController::class, 'resetUserApiTokens']);
 
 $router->get('/transactions', [TransactionController::class, 'index']);
 $router->get('/transactions/add', [TransactionController::class, 'add']);

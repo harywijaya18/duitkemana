@@ -2,6 +2,25 @@
 
 Last updated: 2026-03-16
 
+## Progress Legend
+
+- [x] Done
+- [ ] Pending
+
+## Current Progress Snapshot
+
+- [x] Desktop admin layout + sidebar navigation
+- [x] Route scaffolding for all admin sections
+- [x] Dashboard metrics v1
+- [x] Recurring scheduler health check endpoint
+- [x] User Management functional module (v1: table + filter + suspend/unsuspend)
+- [x] Subscription & Billing functional module
+- [x] Operations Monitor functional module (v1)
+- [x] Product Analytics functional module
+- [x] Support Center functional module
+- [x] Settings functional module
+- [x] Admin audit trail for status actions
+
 ## Sidebar Information Architecture
 
 1. Dashboard
@@ -32,62 +51,67 @@ Last updated: 2026-03-16
 - Route: /admin/settings
 - Purpose: feature flags, global config, security controls.
 
-## Suggested Data Blocks Per Menu
+## Checklist Per Menu
 
 ### Dashboard
-- KPI: total users, active users 30d, tx 30d, expense/income 30d, MRR proxy.
-- Trend 6 bulan: users, tx, income, expense.
-- Recurring scheduler health.
-- Top spenders + recent signups.
+- [x] KPI: total users, active users 30d, tx 30d, expense/income 30d, MRR proxy.
+- [x] Trend 6 bulan: users, tx, income, expense.
+- [x] Recurring scheduler health.
+- [x] Top spenders + recent signups.
 
 ### User Management
-- Table: id, name, email, plan, last_login, status.
-- Actions: suspend/unsuspend, reset password, reset API token.
-- Filters: status, plan, signup date, activity.
+- [x] Table: id, name, email, plan, last_login, status.
+- [x] Actions: suspend/unsuspend, reset password, reset API token.
+- [x] Filters: status, plan, signup date, activity.
 
 ### Subscription & Billing
-- Table: customer, plan, cycle, amount, due date, status.
-- Alerts: payment failed, grace period, downgrade risk.
-- Exports: invoice and payment CSV.
+- [x] Table: customer, plan, cycle, amount, due date, status.
+- [x] Alerts: payment failed, grace period, downgrade risk.
+- [x] Exports: invoice and payment Excel.
 
 ### Operations Monitor
-- Recurring generation coverage.
-- Failed jobs and retry queue.
-- API health panel (latency, error ratio).
-- Data consistency checks.
+- [x] Recurring generation coverage.
+- [x] Failed jobs and retry queue (placeholder-ready).
+- [ ] API health panel (latency, error ratio).
+- [x] Data consistency checks.
 
 ### Product Analytics
-- Cohort retention D1/D7/D30.
-- Feature adoption matrix.
-- Time to first transaction.
-- Conversion funnel register to active.
+- [x] Cohort retention D1/D7/D30.
+- [x] Feature adoption matrix.
+- [x] Time to first transaction.
+- [x] Conversion funnel register to active.
 
 ### Support Center
-- Ticket inbox and SLA.
-- Feedback by category.
-- Broadcast announcement history.
+- [x] Ticket inbox and SLA.
+- [x] Feedback by category.
+- [x] Broadcast announcement history.
 
 ### Settings
-- Feature flag toggles.
-- Threshold and limit configuration.
-- Admin audit policy and access control.
+- [x] Feature flag toggles.
+- [x] Threshold and limit configuration.
+- [x] Admin audit policy and access control.
 
 ## 2-Week MVP Delivery Plan
 
 ### Week 1
-1. Build sidebar layout and route scaffolding.
-2. Implement User Management list + status actions + audit log.
-3. Implement Operations Monitor with recurring health + job status placeholders.
+1. [x] Build sidebar layout and route scaffolding.
+2. [x] Implement User Management list + status actions + audit log.
+3. [x] Implement Operations Monitor with recurring health + job status placeholders.
 
 ### Week 2
-1. Implement Subscription & Billing table with status filters.
-2. Implement Product Analytics basic trends (retention + adoption v1).
-3. Implement Support Center ticket board (simple).
-4. Add Settings page (feature flags + admin security basics).
+1. [x] Implement Subscription & Billing table with status filters.
+2. [x] Implement Product Analytics basic trends (retention + adoption v1).
+3. [x] Implement Support Center ticket board (simple).
+4. [x] Add Settings page (feature flags + admin security basics).
 
 ## Non-Functional Requirements
 
-- Admin pages are desktop-first and optimized for >= 1200px width.
-- Every admin action touching user state must be logged.
-- Sensitive actions require confirmation modal.
-- KPI queries should be paginated/cached for large tenant volume.
+- [x] Admin pages are desktop-first and optimized for >= 1200px width.
+- [ ] Every admin action touching user state must be logged.
+- [ ] Sensitive actions require confirmation modal.
+- [ ] KPI queries should be paginated/cached for large tenant volume.
+
+## Open Items (User Management v1)
+
+- [ ] Add plan column source (subscription module not yet available).
+- [ ] Expand audit logging to all sensitive admin actions.

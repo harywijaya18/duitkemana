@@ -37,6 +37,11 @@ class AuthController extends Controller
             redirect('/login');
         }
 
+        if (($user['status'] ?? 'active') === 'suspended') {
+            flash('error', 'Akun Anda sedang dinonaktifkan. Hubungi admin.');
+            redirect('/login');
+        }
+
         session_regenerate_id(true);
         $_SESSION['user'] = [
             'id' => (int) $user['id'],
@@ -44,6 +49,8 @@ class AuthController extends Controller
             'email' => $user['email'],
             'currency' => $user['currency'],
         ];
+
+        $this->userModel->touchLastLogin((int) $user['id']);
 
         redirect(is_admin_user($_SESSION['user']) ? '/admin/dashboard' : '/');
     }

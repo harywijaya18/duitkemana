@@ -1,0 +1,5 @@
+{
+    "require": {
+        "mk-j/php_xlsxwriter": "^0.39.0"
+    }
+}

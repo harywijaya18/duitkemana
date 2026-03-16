@@ -38,4 +38,18 @@ class ApiTokenModel extends Model
         $stmt = $this->db->prepare('DELETE FROM api_tokens WHERE token_hash = :token_hash');
         return $stmt->execute([':token_hash' => $tokenHash]);
     }
+
+    public function revokeByUser(int $userId): int
+    {
+        $stmt = $this->db->prepare('DELETE FROM api_tokens WHERE user_id = :uid');
+        $stmt->execute([':uid' => $userId]);
+        return (int) $stmt->rowCount();
+    }
+
+    public function countByUser(int $userId): int
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) AS total FROM api_tokens WHERE user_id = :uid');
+        $stmt->execute([':uid' => $userId]);
+        return (int) ($stmt->fetch()['total'] ?? 0);
+    }
 }

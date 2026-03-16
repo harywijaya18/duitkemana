@@ -54,6 +54,10 @@ class ApiAuthController extends ApiController
             $this->error('Invalid credentials', 401);
         }
 
+        if (($user['status'] ?? 'active') === 'suspended') {
+            $this->error('Account suspended', 403);
+        }
+
         $token = bin2hex(random_bytes(32));
         $deviceName = trim($input['device_name'] ?? 'mobile-app');
         $this->tokenModel->create((int) $user['id'], $token, $deviceName);

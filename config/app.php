@@ -39,3 +39,8 @@ spl_autoload_register(function ($class) {
 require_once APP_PATH . '/helpers/helpers.php';
 require_once APP_PATH . '/helpers/pdf_helper.php';
 require_once APP_PATH . '/helpers/api_helper.php';
+
+$composerAutoload = BASE_PATH . '/vendor/autoload.php';
+if (file_exists($composerAutoload)) {
+    require_once $composerAutoload;
+}
