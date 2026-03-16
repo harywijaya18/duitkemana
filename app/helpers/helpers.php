@@ -44,7 +44,7 @@ function verify_csrf(): bool
 
 function require_auth(): void
 {
-    if (empty($_SESSION['user'])) {
+    if (empty(auth_user())) {
         redirect('/login');
     }
 }
