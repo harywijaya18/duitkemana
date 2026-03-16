@@ -15,6 +15,10 @@ define('PUBLIC_PATH', BASE_PATH . DIRECTORY_SEPARATOR . 'public');
 define('UPLOAD_PATH', BASE_PATH . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads');
 define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\'));
 
+$adminEmailsRaw = getenv('ADMIN_EMAILS') ?: 'admin@duitkemana.com';
+$adminEmails = array_values(array_filter(array_map('trim', explode(',', (string) $adminEmailsRaw))));
+define('ADMIN_EMAILS', $adminEmails);
+
 date_default_timezone_set('Asia/Jakarta');
 
 spl_autoload_register(function ($class) {

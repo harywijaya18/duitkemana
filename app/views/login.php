@@ -1,6 +1,9 @@
 <section class="auth-card mx-auto mt-4">
     <div class="text-center mb-4">
-        <h1 class="app-brand">DuitKemana</h1>
+        <div class="auth-brand-title">
+            <img src="<?= e(base_url('/assets/images/favicon-money.svg')); ?>" alt="DuitKemana icon" class="auth-brand-icon">
+            <h1 class="app-brand mb-0">DuitKemana</h1>
+        </div>
         <p class="text-muted mb-0"><?= e(t('Track your money in seconds')); ?></p>
     </div>
 

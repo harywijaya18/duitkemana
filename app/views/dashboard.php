@@ -45,45 +45,76 @@ if (!empty($latestIncomeMonth)) {
 
 <section class="row g-2">
     <div class="col-6">
-        <div class="summary-card summary-card--cyan">
-            <div class="summary-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-            <span><?= e(t('Income This Month')); ?></span>
-            <small style="display:block;font-size:10px;color:var(--muted)"><?= e($currentPeriodLabel); ?></small>
-            <h6 style="color:var(--success)"><?= e(currency_format((float) $monthIncome)); ?></h6>
+        <div class="summary-card summary-card--cyan h-100">
+            <div class="summary-card-head">
+                <div class="summary-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                <div class="summary-card-copy">
+                    <span><?= e(t('Income This Month')); ?></span>
+                    <small><?= e($currentPeriodLabel); ?></small>
+                </div>
+            </div>
+            <div class="summary-card-bodyline">
+                <h6 class="summary-card-amount summary-card-amount--success"><?= e(currency_format((float) $monthIncome)); ?></h6>
+            </div>
             <?php if (!empty($latestIncomeMonth) && ((int) $latestIncomeMonth['month'] !== (int) $currentMonth || (int) $latestIncomeMonth['year'] !== (int) $currentYear)): ?>
-                <small style="display:block;font-size:10px;color:var(--muted)"><?= e(t('Latest income record: :period.', ['period' => $latestIncomePeriodLabel])); ?></small>
+                <small class="summary-card-subnote"><?= e(t('Latest income record: :period.', ['period' => $latestIncomePeriodLabel])); ?></small>
             <?php endif; ?>
         </div>
     </div>
     <div class="col-6">
-        <div class="summary-card summary-card--blue">
-            <div class="summary-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
-            <span><?= e(t('Expense This Month')); ?></span>
-            <h6><?= e(currency_format((float) $monthExpense)); ?></h6>
+        <div class="summary-card summary-card--blue h-100">
+            <div class="summary-card-head">
+                <div class="summary-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                <div class="summary-card-copy">
+                    <span><?= e(t('Expense This Month')); ?></span>
+                    <small>&nbsp;</small>
+                </div>
+            </div>
+            <div class="summary-card-bodyline">
+                <h6 class="summary-card-amount"><?= e(currency_format((float) $monthExpense)); ?></h6>
+            </div>
+            <small class="summary-card-subnote">&nbsp;</small>
         </div>
     </div>
     <div class="col-6">
-        <div class="summary-card <?= $balance >= 0 ? 'summary-card--purple' : 'summary-warning'; ?>">
-            <div class="summary-icon"><i class="fa-solid fa-wallet"></i></div>
-            <span><?= e(t('Balance')); ?></span>
-            <h6 class="<?= $balance < 0 ? 'text-danger' : ''; ?>">
-                <?= e(currency_format(abs((float) $balance))); ?>
-                <?php if ($monthIncome > 0): ?>
-                    <small style="font-size:10px;font-weight:500;opacity:.7"><?= $balance >= 0 ? '+' : '−'; ?><?= (float)$savingsRate; ?>%</small>
-                <?php endif; ?>
-            </h6>
+        <div class="summary-card <?= $balance >= 0 ? 'summary-card--purple' : 'summary-warning'; ?> h-100">
+            <div class="summary-card-head">
+                <div class="summary-icon"><i class="fa-solid fa-wallet"></i></div>
+                <div class="summary-card-copy">
+                    <span><?= e(t('Balance')); ?></span>
+                    <small>&nbsp;</small>
+                </div>
+            </div>
+            <div class="summary-card-bodyline">
+                <h6 class="summary-card-amount <?= $balance < 0 ? 'text-danger' : ''; ?>">
+                    <?= e(currency_format(abs((float) $balance))); ?>
+                    <?php if ($monthIncome > 0): ?>
+                        <small class="summary-card-rate"><?= $balance >= 0 ? '+' : '−'; ?><?= (float)$savingsRate; ?>%</small>
+                    <?php endif; ?>
+                </h6>
+            </div>
             <?php if (!empty($carryover)): ?>
-                <small style="display:block;font-size:10px;color:var(--muted)">
+                <small class="summary-card-subnote">
                     <?= e(t('Prev. balance: :amt', ['amt' => ($carryover >= 0 ? '+' : '−') . currency_format(abs((float) $carryover))])); ?>
                 </small>
+            <?php else: ?>
+                <small class="summary-card-subnote">&nbsp;</small>
             <?php endif; ?>
         </div>
     </div>
     <div class="col-6">
-        <div class="summary-card summary-card--warning <?= $remainingPct < 20 ? 'summary-warning' : ''; ?>">
-            <div class="summary-icon"><i class="fa-solid fa-bullseye"></i></div>
-            <span><?= e(t('Budget Remaining')); ?></span>
-            <h6><?= e(currency_format((float) $remaining)); ?></h6>
+        <div class="summary-card summary-card--warning <?= $remainingPct < 20 ? 'summary-warning' : ''; ?> h-100">
+            <div class="summary-card-head">
+                <div class="summary-icon"><i class="fa-solid fa-bullseye"></i></div>
+                <div class="summary-card-copy">
+                    <span><?= e(t('Budget Remaining')); ?></span>
+                    <small>&nbsp;</small>
+                </div>
+            </div>
+            <div class="summary-card-bodyline">
+                <h6 class="summary-card-amount"><?= e(currency_format((float) $remaining)); ?></h6>
+            </div>
+            <small class="summary-card-subnote">&nbsp;</small>
         </div>
     </div>
 </section>

@@ -44,6 +44,34 @@ function auth_user(): ?array
     return $_SESSION['user'] ?? null;
 }
 
+function admin_emails(): array
+{
+    $emails = defined('ADMIN_EMAILS') ? ADMIN_EMAILS : [];
+    return array_values(array_filter(array_map(static function ($email): string {
+        return strtolower(trim((string) $email));
+    }, $emails)));
+}
+
+function is_admin_user(?array $user = null): bool
+{
+    $candidate = $user ?? auth_user();
+    $email = strtolower(trim((string) ($candidate['email'] ?? '')));
+    if ($email === '') {
+        return false;
+    }
+
+    return in_array($email, admin_emails(), true);
+}
+
+function require_admin(): void
+{
+    require_auth();
+    if (!is_admin_user()) {
+        flash('error', 'Admin access required.');
+        redirect('/');
+    }
+}
+
 function currency_format(float $amount, ?string $currency = null): string
 {
     $userCurrency = $currency ?? ($_SESSION['user']['currency'] ?? 'IDR');

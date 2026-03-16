@@ -13,6 +13,19 @@ $router->post('/register', [AuthController::class, 'doRegister']);
 $router->post('/logout', [AuthController::class, 'logout']);
 $router->post('/language/switch', [LanguageController::class, 'switch']);
 
+// Health checks
+$router->get('/health/recurring', [HealthController::class, 'recurring']);
+
+// Admin (desktop)
+$router->get('/admin', [AdminDashboardController::class, 'index']);
+$router->get('/admin/dashboard', [AdminDashboardController::class, 'index']);
+$router->get('/admin/users', [AdminMvpController::class, 'users']);
+$router->get('/admin/subscriptions', [AdminMvpController::class, 'subscriptions']);
+$router->get('/admin/operations', [AdminMvpController::class, 'operations']);
+$router->get('/admin/analytics', [AdminMvpController::class, 'analytics']);
+$router->get('/admin/support', [AdminMvpController::class, 'support']);
+$router->get('/admin/settings', [AdminMvpController::class, 'settings']);
+
 $router->get('/transactions', [TransactionController::class, 'index']);
 $router->get('/transactions/add', [TransactionController::class, 'add']);
 $router->post('/transactions/store', [TransactionController::class, 'store']);

@@ -135,6 +135,66 @@ class RecurringBillModel extends Model
     }
 
     /**
+     * Scheduler health snapshot for one user and period.
+     */
+    public function healthSnapshotForMonth(int $userId, int $year, int $month): array
+    {
+        $activeBills = $this->activeForMonth($userId, $year, $month);
+
+        $generatedStmt = $this->db->prepare(
+            'SELECT COUNT(*) AS generated_rows, COALESCE(SUM(amount), 0) AS generated_amount
+             FROM transactions
+             WHERE user_id = :uid
+               AND recurring_bill_id IS NOT NULL
+               AND YEAR(transaction_date) = :y
+               AND MONTH(transaction_date) = :m'
+        );
+        $generatedStmt->execute([':uid' => $userId, ':y' => $year, ':m' => $month]);
+        $generated = $generatedStmt->fetch() ?: ['generated_rows' => 0, 'generated_amount' => 0];
+
+        $dupStmt = $this->db->prepare(
+            'SELECT recurring_bill_id, COUNT(*) AS dup_count
+             FROM transactions
+             WHERE user_id = :uid
+               AND recurring_bill_id IS NOT NULL
+               AND YEAR(transaction_date) = :y
+               AND MONTH(transaction_date) = :m
+             GROUP BY recurring_bill_id
+             HAVING COUNT(*) > 1'
+        );
+        $dupStmt->execute([':uid' => $userId, ':y' => $year, ':m' => $month]);
+        $duplicates = $dupStmt->fetchAll();
+
+        return [
+            'period' => [
+                'month' => $month,
+                'year' => $year,
+            ],
+            'defaults' => [
+                'payment_method_id' => $this->resolveDefaultPaymentMethodId(),
+                'category_id' => $this->resolveDefaultCategoryId($userId),
+            ],
+            'active' => [
+                'count' => count($activeBills),
+                'amount' => (float) array_sum(array_column($activeBills, 'amount')),
+            ],
+            'generated' => [
+                'count' => (int) ($generated['generated_rows'] ?? 0),
+                'amount' => (float) ($generated['generated_amount'] ?? 0),
+            ],
+            'duplicates' => [
+                'count' => count($duplicates),
+                'details' => array_map(static function (array $row): array {
+                    return [
+                        'recurring_bill_id' => (int) ($row['recurring_bill_id'] ?? 0),
+                        'duplicate_rows' => (int) ($row['dup_count'] ?? 0),
+                    ];
+                }, $duplicates),
+            ],
+        ];
+    }
+
+    /**
      * Deactivate bills whose end date has already passed.
      * Called on each page load of the bills list and dashboard.
      */

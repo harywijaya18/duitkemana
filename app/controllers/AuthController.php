@@ -14,7 +14,7 @@ class AuthController extends Controller
     public function login(): void
     {
         if (auth_user()) {
-            redirect('/');
+            redirect(is_admin_user() ? '/admin/dashboard' : '/');
         }
 
         $this->view('login');
@@ -45,7 +45,7 @@ class AuthController extends Controller
             'currency' => $user['currency'],
         ];
 
-        redirect('/');
+        redirect(is_admin_user($_SESSION['user']) ? '/admin/dashboard' : '/');
     }
 
     public function register(): void
