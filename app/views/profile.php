@@ -83,3 +83,20 @@ $userInitial = strtoupper(substr(trim($userName) !== '' ? $userName : $userEmail
         </div>
     </a>
 </div>
+
+<div class="soft-card profile-menu-card mb-3">
+    <div class="profile-section-head">
+        <div>
+            <div class="profile-section-label"><?= e(t('Account')); ?></div>
+            <div class="text-muted small"><?= e(t('Session and account actions.')); ?></div>
+        </div>
+    </div>
+
+    <form method="post" action="<?= e(base_url('/logout')); ?>" class="m-0">
+        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
+        <button type="submit" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span><?= e(t('Logout')); ?></span>
+        </button>
+    </form>
+</div>

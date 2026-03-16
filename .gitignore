@@ -12,3 +12,15 @@ node_modules/
 *.log
 Thumbs.db
 Desktop.ini
+
+# Temporary debug/test artifacts
+diag.php
+public/debug-log.php
+public/test-log.php
+
+# Temporary manual deployment bundles
+deploy_patch/
+deploy_patch.zip
+
+# Runtime session files
+storage/sessions/sess_*
