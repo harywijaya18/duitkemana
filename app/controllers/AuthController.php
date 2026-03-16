@@ -22,55 +22,65 @@ class AuthController extends Controller
 
     public function doLogin(): void
     {
-        app_log('[AuthController::doLogin] start');
+        app_log('[AuthController::doLogin] START - session_id=' . session_id());
+        app_log('[AuthController::doLogin] POST=' . json_encode(array_keys($_POST)));
+        
         if (!verify_csrf()) {
-            app_log('[AuthController::doLogin] invalid csrf');
+            app_log('[AuthController::doLogin] CSRF FAILED');
             flash('error', t('Invalid request token.'));
             redirect('/login');
         }
 
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
+        app_log('[AuthController::doLogin] email=' . $email . ' password_len=' . strlen($password));
 
         try {
             $user = $this->userModel->findByEmail($email);
+            app_log('[AuthController::doLogin] DB QUERY OK - user_found=' . ($user ? 'yes' : 'no')];
         } catch (\Throwable $e) {
+            app_log('[AuthController::doLogin] DB ERROR: ' . $e->getMessage());
             $this->logAuthError('[AuthController::doLogin] DB error: ' . $e->getMessage());
             flash('error', 'Login gagal sementara. Periksa konfigurasi database/server.');
             redirect('/login');
         }
 
-        if (!$user || !password_verify($password, $user['password'])) {
-            app_log('[AuthController::doLogin] invalid credentials for ' . $email);
+        if (!$user) {
+            app_log('[AuthController::doLogin] USER NOT FOUND for ' . $email);
+            flash('error', t('Email or password is incorrect.'));
+            redirect('/login');
+        }
+
+        if (!password_verify($password, $user['password'])) {
+            app_log('[AuthController::doLogin] PASSWORD MISMATCH for ' . $email);
             flash('error', t('Email or password is incorrect.'));
             redirect('/login');
         }
 
         if (($user['status'] ?? 'active') === 'suspended') {
-            app_log('[AuthController::doLogin] suspended user ' . ($user['email'] ?? 'unknown'));
+            app_log('[AuthController::doLogin] USER SUSPENDED: ' . $email);
             flash('error', 'Akun Anda sedang dinonaktifkan. Hubungi admin.');
             redirect('/login');
         }
 
-        app_log('[AuthController::doLogin] keeping session id=' . session_id() . ' (shared-hosting workaround)');
+        app_log('[AuthController::doLogin] LOGIN SUCCESS for ' . $email . ' - setting session');
         $_SESSION['user'] = [
             'id' => (int) $user['id'],
             'name' => $user['name'],
             'email' => $user['email'],
             'currency' => $user['currency'],
         ];
-        app_log('[AuthController::doLogin] session user set id=' . (int) $user['id'] . ' email=' . (string) $user['email']);
-        app_log('[AuthController::doLogin] session id before write=' . session_id());
+        app_log('[AuthController::doLogin] SESSION SET - user_id=' . $_SESSION['user']['id']];
 
         try {
             $this->userModel->touchLastLogin((int) $user['id']);
         } catch (\Throwable $e) {
-            $this->logAuthError('[AuthController::doLogin] touchLastLogin error: ' . $e->getMessage());
+            app_log('[AuthController::doLogin] touchLastLogin failed (non-critical): ' . $e->getMessage());
             // Keep login successful even if telemetry update fails.
         }
 
         $target = is_admin_user($_SESSION['user']) ? '/admin/dashboard' : '/';
-        app_log('[AuthController::doLogin] redirecting to ' . $target);
+        app_log('[AuthController::doLogin] REDIRECTING to ' . $target);
         redirect($target);
     }
 
