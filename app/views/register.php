@@ -2,10 +2,26 @@
     <div class="text-center mb-4">
         <div class="auth-brand-title">
             <img src="<?= e(base_url('/assets/images/favicon-money.svg')); ?>" alt="DuitKemana icon" class="auth-brand-icon">
-            <h1 class="app-brand mb-0\"><?= e(t('Create Account')); ?></h1>
+            <h1 class="app-brand mb-0"><?= e(t('Create Account')); ?></h1>
         </div>
         <p class="text-muted mb-0"><?= e(t('Start tracking today')); ?></p>
     </div>
+
+    <?php if ($error = flash('error')): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>
+        <strong>Error:</strong> <?= e($error); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($success = flash('success')): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-check-circle me-2"></i>
+        <?= e($success); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <?php endif; ?>
 
     <form method="post" action="<?= e(base_url('/register')); ?>" class="vstack gap-3">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">

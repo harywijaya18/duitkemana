@@ -22,7 +22,9 @@ class AuthController extends Controller
 
     public function doLogin(): void
     {
+        app_log('[AuthController::doLogin] start');
         if (!verify_csrf()) {
+            app_log('[AuthController::doLogin] invalid csrf');
             flash('error', t('Invalid request token.'));
             redirect('/login');
         }
@@ -30,29 +32,46 @@ class AuthController extends Controller
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        $user = $this->userModel->findByEmail($email);
+        try {
+            $user = $this->userModel->findByEmail($email);
+        } catch (\Throwable $e) {
+            $this->logAuthError('[AuthController::doLogin] DB error: ' . $e->getMessage());
+            flash('error', 'Login gagal sementara. Periksa konfigurasi database/server.');
+            redirect('/login');
+        }
 
         if (!$user || !password_verify($password, $user['password'])) {
+            app_log('[AuthController::doLogin] invalid credentials for ' . $email);
             flash('error', t('Email or password is incorrect.'));
             redirect('/login');
         }
 
         if (($user['status'] ?? 'active') === 'suspended') {
+            app_log('[AuthController::doLogin] suspended user ' . ($user['email'] ?? 'unknown'));
             flash('error', 'Akun Anda sedang dinonaktifkan. Hubungi admin.');
             redirect('/login');
         }
 
-        session_regenerate_id(true);
+        app_log('[AuthController::doLogin] keeping session id=' . session_id() . ' (shared-hosting workaround)');
         $_SESSION['user'] = [
             'id' => (int) $user['id'],
             'name' => $user['name'],
             'email' => $user['email'],
             'currency' => $user['currency'],
         ];
+        app_log('[AuthController::doLogin] session user set id=' . (int) $user['id'] . ' email=' . (string) $user['email']);
+        app_log('[AuthController::doLogin] session id before write=' . session_id());
 
-        $this->userModel->touchLastLogin((int) $user['id']);
+        try {
+            $this->userModel->touchLastLogin((int) $user['id']);
+        } catch (\Throwable $e) {
+            $this->logAuthError('[AuthController::doLogin] touchLastLogin error: ' . $e->getMessage());
+            // Keep login successful even if telemetry update fails.
+        }
 
-        redirect(is_admin_user($_SESSION['user']) ? '/admin/dashboard' : '/');
+        $target = is_admin_user($_SESSION['user']) ? '/admin/dashboard' : '/';
+        app_log('[AuthController::doLogin] redirecting to ' . $target);
+        redirect($target);
     }
 
     public function register(): void
@@ -82,15 +101,28 @@ class AuthController extends Controller
             redirect('/register');
         }
 
-        if ($this->userModel->findByEmail($email)) {
-            flash('error', t('Email already used.'));
+        try {
+            if ($this->userModel->findByEmail($email)) {
+                flash('error', t('Email already used.'));
+                save_old_input($_POST);
+                redirect('/register');
+            }
+
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $userId = $this->userModel->create($name, $email, $hash, $currency ?: 'IDR');
+
+            try {
+                $this->categoryModel->createDefaultForUser($userId);
+            } catch (\Throwable $e) {
+                $this->logAuthError('[AuthController::doRegister] createDefaultForUser error: ' . $e->getMessage());
+                // Do not block registration if default category seeding fails.
+            }
+        } catch (\Throwable $e) {
+            $this->logAuthError('[AuthController::doRegister] DB error: ' . $e->getMessage());
+            flash('error', 'Registrasi gagal. Periksa koneksi database, struktur tabel, dan hak akses user database.');
             save_old_input($_POST);
             redirect('/register');
         }
-
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $userId = $this->userModel->create($name, $email, $hash, $currency ?: 'IDR');
-        $this->categoryModel->createDefaultForUser($userId);
 
         flash('success', t('Registration successful. Please login.'));
         clear_old_input();
@@ -111,5 +143,14 @@ class AuthController extends Controller
         session_destroy();
 
         redirect('/login');
+    }
+
+    private function logAuthError(string $message): void
+    {
+        $line = '[' . date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL;
+        if (defined('APP_LOG_FILE')) {
+            @file_put_contents(APP_LOG_FILE, $line, FILE_APPEND);
+        }
+        error_log($message);
     }
 }

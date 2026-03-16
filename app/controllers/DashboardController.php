@@ -17,15 +17,19 @@ class DashboardController extends Controller
 
     public function index(): void
     {
+        app_log('[DashboardController::index] start');
         require_auth();
 
         $user  = auth_user();
+        app_log('[DashboardController::index] auth user id=' . (int) ($user['id'] ?? 0));
         $month = (int) date('n');
         $year  = (int) date('Y');
 
         // Auto-expire completed bills, then silently generate this month's transactions
         $this->recurringBillModel->expireCompleted($user['id']);
+        app_log('[DashboardController::index] expireCompleted ok');
         $this->recurringBillModel->generateForMonth($user['id'], $year, $month);
+        app_log('[DashboardController::index] generateForMonth ok');
 
         $todayExpense = $this->transactionModel->totalToday($user['id']);
         $monthExpense = $this->transactionModel->totalThisMonth($user['id'], $month, $year);
@@ -100,5 +104,6 @@ class DashboardController extends Controller
             'insights'            => $insights,
             'recurringThisMonth'  => $recurringThisMonth,
         ]);
+        app_log('[DashboardController::index] view rendered');
     }
 }

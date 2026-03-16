@@ -5,8 +5,18 @@ function e(?string $value): string
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+function app_log(string $message): void
+{
+    $line = '[' . date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL;
+    if (defined('APP_LOG_FILE')) {
+        @file_put_contents(APP_LOG_FILE, $line, FILE_APPEND);
+    }
+    error_log($message);
+}
+
 function redirect(string $path): void
 {
+    session_write_close();
     header('Location: ' . base_url($path));
     exit;
 }

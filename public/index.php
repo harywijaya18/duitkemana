@@ -2,6 +2,46 @@
 
 require_once dirname(__DIR__) . '/config/app.php';
 
+$requestId = bin2hex(random_bytes(8));
+
+$writeAppLog = static function (string $message) use ($requestId): void {
+	$line = '[' . date('Y-m-d H:i:s') . '][request:' . $requestId . '] ' . $message . PHP_EOL;
+	if (defined('APP_LOG_FILE')) {
+		@file_put_contents(APP_LOG_FILE, $line, FILE_APPEND);
+	}
+	error_log('[request:' . $requestId . '] ' . $message);
+};
+
+$writeAppLog('Incoming request: ' . ($_SERVER['REQUEST_METHOD'] ?? 'GET') . ' ' . ($_SERVER['REQUEST_URI'] ?? '/'));
+
+set_exception_handler(static function (\Throwable $e) use ($requestId, $writeAppLog): void {
+	$writeAppLog('Uncaught exception: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+	if (!headers_sent()) {
+		http_response_code(500);
+		header('Content-Type: text/plain; charset=UTF-8');
+	}
+	echo 'Terjadi error server. Silakan coba lagi. Ref: ' . $requestId;
+	exit;
+});
+
+register_shutdown_function(static function () use ($requestId, $writeAppLog): void {
+	$error = error_get_last();
+	if ($error === null) {
+		return;
+	}
+
+	if (!in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+		return;
+	}
+
+	$writeAppLog('Fatal error: ' . ($error['message'] ?? 'unknown') . ' in ' . ($error['file'] ?? '-') . ':' . ($error['line'] ?? 0));
+	if (!headers_sent()) {
+		http_response_code(500);
+		header('Content-Type: text/plain; charset=UTF-8');
+	}
+	echo 'Terjadi error server. Silakan coba lagi. Ref: ' . $requestId;
+});
+
 $router = new Router();
 
 $router->get('/', [DashboardController::class, 'index']);
@@ -172,4 +212,13 @@ $router->post('/api/profile/update', [ApiProfileController::class, 'update']);
 $router->get('/api/v1/profile/me', [ApiProfileController::class, 'me']);
 $router->post('/api/v1/profile/update', [ApiProfileController::class, 'update']);
 
-$router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
+try {
+	$router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
+} catch (\Throwable $e) {
+	$writeAppLog('Dispatch error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+	if (!headers_sent()) {
+		http_response_code(500);
+		header('Content-Type: text/plain; charset=UTF-8');
+	}
+	echo 'Terjadi error server. Silakan coba lagi. Ref: ' . $requestId;
+}
