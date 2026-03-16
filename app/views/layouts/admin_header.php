@@ -4,6 +4,7 @@ $path = current_path();
 $adminMenu = [
     ['key' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'fa-gauge-high', 'href' => base_url('/admin/dashboard')],
     ['key' => 'users', 'label' => 'User Management', 'icon' => 'fa-users', 'href' => base_url('/admin/users')],
+    ['key' => 'transactions', 'label' => 'Transactions Audit', 'icon' => 'fa-receipt', 'href' => base_url('/admin/transactions')],
     ['key' => 'subscriptions', 'label' => 'Subscription & Billing', 'icon' => 'fa-credit-card', 'href' => base_url('/admin/subscriptions')],
     ['key' => 'operations', 'label' => 'Operations Monitor', 'icon' => 'fa-heart-pulse', 'href' => base_url('/admin/operations')],
     ['key' => 'analytics', 'label' => 'Product Analytics', 'icon' => 'fa-chart-line', 'href' => base_url('/admin/analytics')],

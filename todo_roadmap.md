@@ -24,32 +24,32 @@ Last updated: 2026-03-16
 - [x] API receipt upload endpoint (multipart)
 - [x] Postman collection for QA
 
-## Milestone C - Product Features (Partially Done)
+## Milestone C - Product Features (Done)
 
 - [x] Recurring expense scheduler (manage + generate monthly transactions)
-- [ ] Budget goals by category
-- [ ] Push notification reminders
-- [ ] AI spending anomaly detection
-- [ ] Multi-currency exchange support
-- [ ] Dark mode and theme personalization
+- [x] Budget goals by category
+- [x] Push notification reminders (in-app)
+- [x] AI spending anomaly detection (rule-based)
+- [x] Multi-currency exchange support (IDR/USD/EUR/SGD/MYR/JPY/AUD/GBP/CNY/SAR)
+- [x] Dark mode and theme personalization
 
 ## Milestone D - Mobile/API Production Readiness (Planned)
 
-- [ ] Add API pagination and cursor metadata
-- [ ] Add endpoint versioning (/api/v1)
-- [ ] Add refresh token flow and token expiry
-- [ ] Add API rate limiting
-- [ ] Add request and error logging
-- [ ] Add standardized error codes
-- [ ] Add OpenAPI/Swagger spec
-- [ ] Add automated API tests (PHPUnit)
+- [x] Add API pagination and cursor metadata
+- [x] Add endpoint versioning (/api/v1)
+- [x] Add refresh token flow and token expiry
+- [x] Add API rate limiting
+- [x] Add request and error logging
+- [x] Add standardized error codes
+- [x] Add OpenAPI/Swagger spec
+- [x] Add automated API tests (PowerShell smoke tests — PHPUnit blocked on PHP 8.0)
 
 ## Next Sprint (Prioritized)
 
-1. Add API pagination for transactions and reports.
-2. Introduce API versioning (`/api/v1`) and deprecation notes.
-3. Add standardized API error response format + error codes.
-4. Draft OpenAPI/Swagger spec and connect basic API test pipeline.
+1. [x] Add API pagination for transactions and reports.
+2. [x] Introduce API versioning (`/api/v1`) and deprecation notes.
+3. [x] Add standardized API error response format + error codes.
+4. [ ] Draft OpenAPI/Swagger spec and connect basic API test pipeline.
 
 ## Admin SaaS MVP Blueprint (Desktop)
 

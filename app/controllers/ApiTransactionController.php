@@ -14,12 +14,32 @@ class ApiTransactionController extends ApiController
         $this->requireApiAuth();
         $user = $this->apiUser();
 
-        $rows = $this->transactionModel->allByUser($user['id']);
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = max(1, min(100, (int) ($_GET['per_page'] ?? 20)));
+        $cursorRaw = trim((string) ($_GET['cursor'] ?? ''));
+        $cursor = ctype_digit($cursorRaw) ? (int) $cursorRaw : null;
+
+        $total = $this->transactionModel->countByUser((int) $user['id']);
+        $result = $this->transactionModel->paginateByUser((int) $user['id'], $page, $perPage, $cursor);
+        $rows = $result['items'] ?? [];
         foreach ($rows as &$row) {
             $row['receipt_url'] = receipt_url($row['receipt_image'] ?? null);
         }
         unset($row);
-        $this->success(['transactions' => $rows]);
+
+        $this->success([
+            'transactions' => $rows,
+            'pagination' => [
+                'mode' => ($cursor !== null && $cursor > 0) ? 'cursor' : 'page',
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'total_pages' => max(1, (int) ceil($total / $perPage)),
+                'cursor' => ($cursor !== null && $cursor > 0) ? $cursor : null,
+                'next_cursor' => $result['next_cursor'] ?? null,
+                'has_more' => (bool) ($result['has_more'] ?? false),
+            ],
+        ]);
     }
 
     public function create(): void
@@ -30,7 +50,7 @@ class ApiTransactionController extends ApiController
 
         $validation = $this->validateInput($input);
         if ($validation !== true) {
-            $this->error('Validation failed', 422, $validation);
+            $this->error('Validation failed', 422, $validation, 'TX_VALIDATION_FAILED');
         }
 
         $payload = [
@@ -55,17 +75,17 @@ class ApiTransactionController extends ApiController
 
         $id = (int) ($input['id'] ?? 0);
         if ($id <= 0) {
-            $this->error('Invalid transaction id', 422);
+            $this->error('Invalid transaction id', 422, [], 'TX_INVALID_ID');
         }
 
         $validation = $this->validateInput($input);
         if ($validation !== true) {
-            $this->error('Validation failed', 422, $validation);
+            $this->error('Validation failed', 422, $validation, 'TX_VALIDATION_FAILED');
         }
 
         $existing = $this->transactionModel->findById($id, $user['id']);
         if (!$existing) {
-            $this->error('Transaction not found', 404);
+            $this->error('Transaction not found', 404, [], 'TX_NOT_FOUND');
         }
 
         $payload = [
@@ -89,7 +109,7 @@ class ApiTransactionController extends ApiController
 
         $id = (int) ($input['id'] ?? 0);
         if ($id <= 0) {
-            $this->error('Invalid transaction id', 422);
+            $this->error('Invalid transaction id', 422, [], 'TX_INVALID_ID');
         }
 
         $this->transactionModel->delete($id, $user['id']);
@@ -101,12 +121,12 @@ class ApiTransactionController extends ApiController
         $this->requireApiAuth();
 
         if (empty($_FILES['receipt'])) {
-            $this->error('Validation failed', 422, ['receipt file is required']);
+            $this->error('Validation failed', 422, ['receipt file is required'], 'TX_RECEIPT_REQUIRED');
         }
 
         $filename = $this->uploadFile($_FILES['receipt']);
         if (!$filename) {
-            $this->error('Upload failed. Allowed: JPG, PNG, WEBP max 2MB.', 422);
+            $this->error('Upload failed. Allowed: JPG, PNG, WEBP max 2MB.', 422, [], 'TX_RECEIPT_UPLOAD_FAILED');
         }
 
         $this->success([

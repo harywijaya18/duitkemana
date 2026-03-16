@@ -75,6 +75,15 @@ function require_admin(): void
 function currency_format(float $amount, ?string $currency = null): string
 {
     $userCurrency = $currency ?? ($_SESSION['user']['currency'] ?? 'IDR');
+    $rates        = defined('EXCHANGE_RATES_IDR') ? EXCHANGE_RATES_IDR : ['IDR' => 1];
+    $rate         = (float) ($rates[$userCurrency] ?? 1);
+
+    if ($userCurrency !== 'IDR' && $rate > 1) {
+        $converted    = $amount / $rate;
+        $decimals     = $converted < 100 ? 2 : 0;
+        return $userCurrency . ' ' . number_format($converted, $decimals, '.', ',');
+    }
+
     return $userCurrency . ' ' . number_format($amount, 0, ',', '.');
 }
 

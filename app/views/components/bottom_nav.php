@@ -18,8 +18,11 @@
         <i class="fa-solid fa-chart-pie"></i>
         <span><?= e(t('Reports')); ?></span>
     </a>
-    <a href="<?= e(base_url('/profile')); ?>" class="tab-item <?= $path === '/profile' ? 'active' : ''; ?>">
-        <i class="fa-solid fa-user"></i>
-        <span><?= e(t('Profile')); ?></span>
+    <a href="<?= e(base_url('/notifications')); ?>" class="tab-item tab-notif <?= $path === '/notifications' ? 'active' : ''; ?>" style="position:relative">
+        <i class="fa-solid fa-bell"></i>
+        <?php if (!empty($notifUnread) && $notifUnread > 0): ?>
+            <span class="notif-badge"><?= $notifUnread > 9 ? '9+' : (int) $notifUnread; ?></span>
+        <?php endif; ?>
+        <span><?= e(t('Alerts')); ?></span>
     </a>
 </nav>

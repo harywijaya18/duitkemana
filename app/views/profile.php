@@ -16,10 +16,20 @@
         <div>
             <label class="form-label"><?= e(t('Currency')); ?></label>
             <select name="currency" class="form-select form-select-lg">
-                <?php foreach (['IDR', 'USD', 'MYR', 'SGD'] as $curr): ?>
-                    <option value="<?= e($curr); ?>" <?= ($profile['currency'] ?? 'IDR') === $curr ? 'selected' : ''; ?>><?= e($curr); ?></option>
+                <?php
+                $supportedCurrencies = defined('EXCHANGE_RATES_IDR') ? array_keys(EXCHANGE_RATES_IDR) : ['IDR','USD','MYR','SGD'];
+                foreach ($supportedCurrencies as $curr):
+                    $rate = EXCHANGE_RATES_IDR[$curr] ?? 1;
+                    $label = $curr;
+                    if ($curr !== 'IDR') {
+                        $label .= ' (1 ' . $curr . ' ≈ IDR ' . number_format((float)$rate, 0, ',', '.');
+                        $label .= ')';
+                    }
+                ?>
+                    <option value="<?= e($curr); ?>" <?= ($profile['currency'] ?? 'IDR') === $curr ? 'selected' : ''; ?>><?= e($label); ?></option>
                 <?php endforeach; ?>
             </select>
+            <div class="form-text"><?= e(t('Amounts will be displayed in your chosen currency.')); ?></div>
         </div>
         <button class="btn btn-primary btn-lg" type="submit"><?= e(t('Update Profile')); ?></button>
     </form>

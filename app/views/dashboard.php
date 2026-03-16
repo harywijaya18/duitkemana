@@ -20,6 +20,11 @@ if (!empty($latestIncomeMonth)) {
 <div class="dashboard-compact">
 <section class="hero-card hero-card-compact mb-2">
     <div class="hero-lang-corner">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
         <form method="post" action="<?= e(base_url('/language/switch')); ?>" class="lang-switch-compact">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()); ?>">
             <input type="hidden" name="redirect" value="<?= e($redirectPath); ?>">

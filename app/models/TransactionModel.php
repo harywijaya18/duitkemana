@@ -97,6 +97,65 @@ class TransactionModel extends Model
         return $stmt->fetchAll();
     }
 
+    public function countByUser(int $userId): int
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM transactions WHERE user_id = :user_id');
+        $stmt->execute([':user_id' => $userId]);
+        return (int) ($stmt->fetchColumn() ?: 0);
+    }
+
+    public function paginateByUser(int $userId, int $page = 1, int $perPage = 20, ?int $cursor = null): array
+    {
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+        $offset = ($page - 1) * $perPage;
+
+        $sql =
+            'SELECT t.*, c.name AS category_name, c.icon AS category_icon, p.name AS payment_method_name
+             FROM transactions t
+             JOIN categories c ON c.id = t.category_id
+             JOIN payment_methods p ON p.id = t.payment_method_id
+             WHERE t.user_id = :user_id';
+        $params = [':user_id' => $userId];
+
+        if ($cursor !== null && $cursor > 0) {
+            $sql .= ' AND t.id < :cursor';
+            $params[':cursor'] = $cursor;
+        }
+
+        $sql .= ' ORDER BY t.transaction_date DESC, t.id DESC LIMIT :limit';
+        if ($cursor === null || $cursor <= 0) {
+            $sql .= ' OFFSET :offset';
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        if ($cursor !== null && $cursor > 0) {
+            $stmt->bindValue(':cursor', $cursor, PDO::PARAM_INT);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        if ($cursor === null || $cursor <= 0) {
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+
+        $items = $stmt->fetchAll();
+        $nextCursor = null;
+        if (!empty($items)) {
+            $last = end($items);
+            $nextCursor = (int) ($last['id'] ?? 0);
+            if ($nextCursor <= 0) {
+                $nextCursor = null;
+            }
+        }
+
+        return [
+            'items' => $items,
+            'next_cursor' => $nextCursor,
+            'has_more' => count($items) === $perPage,
+        ];
+    }
+
     public function filteredByUser(int $userId, array $filters = []): array
     {
         $sql =
@@ -226,6 +285,76 @@ class TransactionModel extends Model
         ]);
 
         return $stmt->fetchAll();
+    }
+
+    public function countReportByRange(int $userId, string $startDate, string $endDate): int
+    {
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*)
+             FROM transactions
+             WHERE user_id = :user_id
+               AND transaction_date BETWEEN :start_date AND :end_date'
+        );
+        $stmt->execute([
+            ':user_id' => $userId,
+            ':start_date' => $startDate,
+            ':end_date' => $endDate,
+        ]);
+
+        return (int) ($stmt->fetchColumn() ?: 0);
+    }
+
+    public function paginateReportByRange(int $userId, string $startDate, string $endDate, int $page = 1, int $perPage = 20, ?int $cursor = null): array
+    {
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+        $offset = ($page - 1) * $perPage;
+
+        $sql =
+            'SELECT t.*, c.name AS category_name, c.icon AS category_icon, p.name AS payment_method_name
+             FROM transactions t
+             JOIN categories c ON c.id = t.category_id
+             JOIN payment_methods p ON p.id = t.payment_method_id
+             WHERE t.user_id = :user_id
+               AND t.transaction_date BETWEEN :start_date AND :end_date';
+
+        if ($cursor !== null && $cursor > 0) {
+            $sql .= ' AND t.id < :cursor';
+        }
+
+        $sql .= ' ORDER BY t.transaction_date DESC, t.id DESC LIMIT :limit';
+        if ($cursor === null || $cursor <= 0) {
+            $sql .= ' OFFSET :offset';
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':start_date', $startDate);
+        $stmt->bindValue(':end_date', $endDate);
+        if ($cursor !== null && $cursor > 0) {
+            $stmt->bindValue(':cursor', $cursor, PDO::PARAM_INT);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        if ($cursor === null || $cursor <= 0) {
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+
+        $items = $stmt->fetchAll();
+        $nextCursor = null;
+        if (!empty($items)) {
+            $last = end($items);
+            $nextCursor = (int) ($last['id'] ?? 0);
+            if ($nextCursor <= 0) {
+                $nextCursor = null;
+            }
+        }
+
+        return [
+            'items' => $items,
+            'next_cursor' => $nextCursor,
+            'has_more' => count($items) === $perPage,
+        ];
     }
 
     public function chartByCategory(int $userId, string $startDate, string $endDate): array

@@ -31,6 +31,18 @@
             </a>
         </div>
         <div class="col">
+            <a class="menu-card" href="<?= e(base_url('/budget/goals')); ?>">
+                <div class="menu-icon-wrap"><i class="fa-solid fa-flag-checkered"></i></div>
+                <small><?= e(t('Goals')); ?></small>
+            </a>
+        </div>
+        <div class="col">
+            <a class="menu-card" href="<?= e(base_url('/anomalies')); ?>">
+                <div class="menu-icon-wrap"><i class="fa-solid fa-robot"></i></div>
+                <small><?= e(t('Anomalies')); ?></small>
+            </a>
+        </div>
+        <div class="col">
             <a class="menu-card" href="<?= e(base_url('/income')); ?>">
                 <div class="menu-icon-wrap"><i class="fa-solid fa-receipt"></i></div>
                 <small><?= e(t('Income')); ?></small>

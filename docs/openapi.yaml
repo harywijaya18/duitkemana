@@ -1,0 +1,324 @@
+openapi: 3.0.3
+info:
+  title: DuitKemana API
+  version: 1.0.0
+  description: |
+    API untuk aplikasi DuitKemana.
+    - Base path v1: /api/v1
+    - Legacy path: /api (deprecated)
+servers:
+  - url: http://localhost/budget/public/api/v1
+    description: Local v1
+  - url: http://localhost/budget/public/api
+    description: Legacy (deprecated)
+tags:
+  - name: Auth
+  - name: Transactions
+  - name: Reports
+  - name: Categories
+  - name: Budget
+  - name: Profile
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register user and issue token pair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 6 }
+                currency: { type: string, example: IDR }
+                device_name: { type: string, example: android-app }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and issue token pair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                device_name: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate refresh token and return new token pair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshSuccess'
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke access token
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccess'
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+  /transactions:
+    get:
+      tags: [Transactions]
+      summary: List transactions with pagination/cursor metadata
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: per_page
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - in: query
+          name: cursor
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { schema: { type: integer } }
+            X-RateLimit-Remaining: { schema: { type: integer } }
+            X-RateLimit-Reset: { schema: { type: integer } }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          transactions:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Transaction'
+                          pagination:
+                            $ref: '#/components/schemas/PaginationMeta'
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+        '429': { $ref: '#/components/responses/RateLimitedError' }
+  /reports/summary:
+    get:
+      tags: [Reports]
+      summary: Report summary with paginated transaction sample
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: filter
+          schema:
+            type: string
+            enum: [daily, weekly, monthly, custom]
+            default: monthly
+        - in: query
+          name: start_date
+          schema: { type: string, format: date }
+        - in: query
+          name: end_date
+          schema: { type: string, format: date }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: per_page
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - in: query
+          name: cursor
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportSummarySuccess'
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+        '429': { $ref: '#/components/responses/RateLimitedError' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: token
+  schemas:
+    ApiSuccess:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        message: { type: string, example: OK }
+        code: { type: string, example: SUCCESS }
+        data: { type: object }
+        meta: { $ref: '#/components/schemas/ResponseMeta' }
+    ApiError:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        message: { type: string }
+        code: { type: string, example: VALIDATION_FAILED }
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details:
+              type: array
+              items: { type: string }
+            status: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+        meta: { $ref: '#/components/schemas/ResponseMeta' }
+    ResponseMeta:
+      type: object
+      properties:
+        timestamp: { type: string, format: date-time }
+        request_id: { type: string }
+        status: { type: integer }
+        api_version: { type: string, example: v1 }
+        path: { type: string }
+    PaginationMeta:
+      type: object
+      properties:
+        mode: { type: string, enum: [page, cursor] }
+        page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+        total_pages: { type: integer }
+        cursor: { type: integer, nullable: true }
+        next_cursor: { type: integer, nullable: true }
+        has_more: { type: boolean }
+    UserPublic:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        currency: { type: string }
+    AuthSuccess:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccess'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                token: { type: string }
+                access_token: { type: string }
+                refresh_token: { type: string }
+                token_type: { type: string, example: Bearer }
+                expires_at: { type: string, format: date-time }
+                refresh_expires_at: { type: string, format: date-time }
+                user: { $ref: '#/components/schemas/UserPublic' }
+    RefreshSuccess:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccess'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                token: { type: string }
+                access_token: { type: string }
+                refresh_token: { type: string }
+                token_type: { type: string, example: Bearer }
+                expires_at: { type: string, format: date-time }
+                refresh_expires_at: { type: string, format: date-time }
+    Transaction:
+      type: object
+      properties:
+        id: { type: integer }
+        category_id: { type: integer }
+        amount: { type: number, format: double }
+        payment_method_id: { type: integer }
+        description: { type: string, nullable: true }
+        receipt_image: { type: string, nullable: true }
+        receipt_url: { type: string, nullable: true }
+        transaction_date: { type: string, format: date }
+        category_name: { type: string }
+        payment_method_name: { type: string }
+    ReportSummarySuccess:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccess'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                filter: { type: string }
+                start_date: { type: string, format: date }
+                end_date: { type: string, format: date }
+                total_spending: { type: number, format: double }
+                average_daily_spending: { type: number, format: double }
+                transactions_count: { type: integer }
+                transactions_on_page: { type: integer }
+                pagination: { $ref: '#/components/schemas/PaginationMeta' }
+                transactions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Transaction'
+  responses:
+    UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    RateLimitedError:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'

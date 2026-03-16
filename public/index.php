@@ -20,6 +20,7 @@ $router->get('/health/recurring', [HealthController::class, 'recurring']);
 $router->get('/admin', [AdminDashboardController::class, 'index']);
 $router->get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 $router->get('/admin/users', [AdminMvpController::class, 'users']);
+$router->get('/admin/transactions', [AdminMvpController::class, 'transactions']);
 $router->get('/admin/subscriptions', [AdminMvpController::class, 'subscriptions']);
 $router->get('/admin/subscriptions/export', [AdminMvpController::class, 'exportSubscriptions']);
 $router->get('/admin/operations', [AdminMvpController::class, 'operations']);
@@ -46,13 +47,22 @@ $router->post('/categories/delete', [CategoryController::class, 'delete']);
 
 $router->get('/budget', [BudgetController::class, 'index']);
 $router->post('/budget/save', [BudgetController::class, 'save']);
+$router->get('/budget/goals', [BudgetController::class, 'goals']);
+$router->post('/budget/goals/save', [BudgetController::class, 'saveGoal']);
+$router->post('/budget/goals/delete', [BudgetController::class, 'deleteGoal']);
 
 $router->get('/reports', [ReportController::class, 'index']);
 $router->get('/reports/export', [ReportController::class, 'export']);
 $router->get('/reports/charts', [ReportController::class, 'charts']);
 
+$router->get('/anomalies', [AnomalyController::class, 'index']);
+
 $router->get('/profile', [ProfileController::class, 'index']);
 $router->post('/profile/update', [ProfileController::class, 'update']);
+
+$router->get('/notifications', [NotificationController::class, 'index']);
+$router->post('/notifications/read', [NotificationController::class, 'markRead']);
+$router->post('/notifications/read-all', [NotificationController::class, 'markRead']);
 
 // Salary config
 $router->get('/salary-config', [SalaryController::class, 'index']);
@@ -83,6 +93,13 @@ $router->post('/bills/generate', [RecurringBillController::class, 'generate']);
 $router->post('/api/auth/register', [ApiAuthController::class, 'register']);
 $router->post('/api/auth/login', [ApiAuthController::class, 'login']);
 $router->post('/api/auth/logout', [ApiAuthController::class, 'logout']);
+$router->post('/api/auth/refresh', [ApiAuthController::class, 'refresh']);
+
+// API v1 Auth
+$router->post('/api/v1/auth/register', [ApiAuthController::class, 'register']);
+$router->post('/api/v1/auth/login', [ApiAuthController::class, 'login']);
+$router->post('/api/v1/auth/logout', [ApiAuthController::class, 'logout']);
+$router->post('/api/v1/auth/refresh', [ApiAuthController::class, 'refresh']);
 
 // API Transactions CRUD
 $router->get('/api/transactions', [ApiTransactionController::class, 'index']);
@@ -91,26 +108,55 @@ $router->post('/api/transactions/update', [ApiTransactionController::class, 'upd
 $router->post('/api/transactions/delete', [ApiTransactionController::class, 'delete']);
 $router->post('/api/transactions/upload-receipt', [ApiTransactionController::class, 'uploadReceipt']);
 
+// API v1 Transactions CRUD
+$router->get('/api/v1/transactions', [ApiTransactionController::class, 'index']);
+$router->post('/api/v1/transactions/create', [ApiTransactionController::class, 'create']);
+$router->post('/api/v1/transactions/update', [ApiTransactionController::class, 'update']);
+$router->post('/api/v1/transactions/delete', [ApiTransactionController::class, 'delete']);
+$router->post('/api/v1/transactions/upload-receipt', [ApiTransactionController::class, 'uploadReceipt']);
+
 // API Categories CRUD
 $router->get('/api/categories', [ApiCategoryController::class, 'index']);
 $router->post('/api/categories/create', [ApiCategoryController::class, 'create']);
 $router->post('/api/categories/update', [ApiCategoryController::class, 'update']);
 $router->post('/api/categories/delete', [ApiCategoryController::class, 'delete']);
 
+// API v1 Categories CRUD
+$router->get('/api/v1/categories', [ApiCategoryController::class, 'index']);
+$router->post('/api/v1/categories/create', [ApiCategoryController::class, 'create']);
+$router->post('/api/v1/categories/update', [ApiCategoryController::class, 'update']);
+$router->post('/api/v1/categories/delete', [ApiCategoryController::class, 'delete']);
+
 // API Budget
 $router->get('/api/budget', [ApiBudgetController::class, 'get']);
 $router->post('/api/budget/save', [ApiBudgetController::class, 'save']);
+
+// API v1 Budget
+$router->get('/api/v1/budget', [ApiBudgetController::class, 'get']);
+$router->post('/api/v1/budget/save', [ApiBudgetController::class, 'save']);
 
 // API Reports
 $router->get('/api/reports/summary', [ApiReportController::class, 'summary']);
 $router->get('/api/reports/charts', [ApiReportController::class, 'charts']);
 $router->get('/api/reports/export', [ApiReportController::class, 'export']);
 
+// API v1 Reports
+$router->get('/api/v1/reports/summary', [ApiReportController::class, 'summary']);
+$router->get('/api/v1/reports/charts', [ApiReportController::class, 'charts']);
+$router->get('/api/v1/reports/export', [ApiReportController::class, 'export']);
+
 // API Payment Methods
 $router->get('/api/payment-methods', [ApiPaymentMethodController::class, 'index']);
+
+// API v1 Payment Methods
+$router->get('/api/v1/payment-methods', [ApiPaymentMethodController::class, 'index']);
 
 // API Profile
 $router->get('/api/profile/me', [ApiProfileController::class, 'me']);
 $router->post('/api/profile/update', [ApiProfileController::class, 'update']);
+
+// API v1 Profile
+$router->get('/api/v1/profile/me', [ApiProfileController::class, 'me']);
+$router->post('/api/v1/profile/update', [ApiProfileController::class, 'update']);
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

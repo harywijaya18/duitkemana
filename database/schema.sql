@@ -114,14 +114,41 @@ CREATE TABLE admin_settings (
     CONSTRAINT fk_admin_settings_user FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+CREATE TABLE api_request_logs (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NULL,
+    method VARCHAR(10) NOT NULL,
+    path VARCHAR(255) NOT NULL,
+    query_string VARCHAR(500) NULL,
+    status_code SMALLINT UNSIGNED NOT NULL,
+    error_code VARCHAR(80) NULL,
+    duration_ms INT UNSIGNED NOT NULL DEFAULT 0,
+    ip_address VARCHAR(45) NULL,
+    user_agent VARCHAR(255) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_api_request_logs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_api_request_logs_created (created_at),
+    INDEX idx_api_request_logs_status_created (status_code, created_at),
+    INDEX idx_api_request_logs_path_created (path, created_at),
+    INDEX idx_api_request_logs_error_created (error_code, created_at)
+) ENGINE=InnoDB;
+
 CREATE TABLE api_tokens (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,
     token_hash CHAR(64) NOT NULL UNIQUE,
+    token_type ENUM('access','refresh') NOT NULL DEFAULT 'access',
+    expires_at DATETIME NULL,
+    revoked_at DATETIME NULL,
     device_name VARCHAR(120) NULL,
+    parent_token_id BIGINT UNSIGNED NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_api_tokens_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_api_tokens_user (user_id)
+    CONSTRAINT fk_api_tokens_parent FOREIGN KEY (parent_token_id) REFERENCES api_tokens(id) ON DELETE SET NULL,
+    INDEX idx_api_tokens_user (user_id),
+    INDEX idx_api_tokens_type_expires (token_type, expires_at),
+    INDEX idx_api_tokens_user_type (user_id, token_type),
+    INDEX idx_api_tokens_revoked (revoked_at)
 ) ENGINE=InnoDB;
 
 CREATE TABLE payment_methods (

@@ -20,7 +20,7 @@ class ApiBudgetController extends ApiController
         $year = (int) ($_GET['year'] ?? date('Y'));
 
         if ($month < 1 || $month > 12 || $year < 2000) {
-            $this->error('Invalid month/year', 422);
+            $this->error('Invalid month/year', 422, [], 'BUDGET_INVALID_PERIOD');
         }
 
         $budget = $this->budgetModel->getMonthlyBudget($user['id'], $month, $year);
@@ -49,7 +49,7 @@ class ApiBudgetController extends ApiController
         $amount = (float) ($input['amount'] ?? 0);
 
         if ($month < 1 || $month > 12 || $year < 2000 || $amount <= 0) {
-            $this->error('Validation failed', 422, ['month/year/amount is invalid']);
+            $this->error('Validation failed', 422, ['month/year/amount is invalid'], 'BUDGET_VALIDATION_FAILED');
         }
 
         $this->budgetModel->setMonthlyBudget($user['id'], $month, $year, $amount);

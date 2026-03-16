@@ -10,6 +10,7 @@ class AdminMvpController extends Controller
     private AdminAnalyticsModel $analyticsModel;
     private AdminSupportModel $supportModel;
     private AdminSettingsModel $settingsModel;
+    private AdminTransactionsModel $transactionsModel;
 
     public function __construct()
     {
@@ -21,6 +22,7 @@ class AdminMvpController extends Controller
         $this->analyticsModel = $this->model(AdminAnalyticsModel::class);
         $this->supportModel = $this->model(AdminSupportModel::class);
         $this->settingsModel = $this->model(AdminSettingsModel::class);
+        $this->transactionsModel = $this->model(AdminTransactionsModel::class);
     }
 
     public function users(): void
@@ -144,6 +146,36 @@ class AdminMvpController extends Controller
         $billingAvailable = $this->billingModel->isAvailable();
 
         $viewFile = APP_PATH . '/views/admin/subscriptions.php';
+        if (!file_exists($viewFile)) {
+            http_response_code(404);
+            echo 'View not found';
+            return;
+        }
+
+        require APP_PATH . '/views/layouts/admin_header.php';
+        require $viewFile;
+        require APP_PATH . '/views/layouts/admin_footer.php';
+    }
+
+    public function transactions(): void
+    {
+        require_admin();
+
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $filters = [
+            'user_id' => (int) ($_GET['user_id'] ?? 0),
+            'category_id' => (int) ($_GET['category_id'] ?? 0),
+            'payment_method_id' => (int) ($_GET['payment_method_id'] ?? 0),
+            'q' => trim((string) ($_GET['q'] ?? '')),
+            'start_date' => trim((string) ($_GET['start_date'] ?? '')),
+            'end_date' => trim((string) ($_GET['end_date'] ?? '')),
+            'min_amount' => trim((string) ($_GET['min_amount'] ?? '')),
+            'max_amount' => trim((string) ($_GET['max_amount'] ?? '')),
+        ];
+
+        $snapshot = $this->transactionsModel->snapshot($filters, $page, 25);
+
+        $viewFile = APP_PATH . '/views/admin/transactions.php';
         if (!file_exists($viewFile)) {
             http_response_code(404);
             echo 'View not found';

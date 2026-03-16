@@ -14,8 +14,15 @@ class ApiReportController extends ApiController
         $this->requireApiAuth();
         $user = $this->apiUser();
 
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = max(1, min(100, (int) ($_GET['per_page'] ?? 20)));
+        $cursorRaw = trim((string) ($_GET['cursor'] ?? ''));
+        $cursor = ctype_digit($cursorRaw) ? (int) $cursorRaw : null;
+
         [$startDate, $endDate, $filter] = $this->resolveDateRange();
-        $rows = $this->transactionModel->reportByRange($user['id'], $startDate, $endDate);
+        $totalTransactions = $this->transactionModel->countReportByRange((int) $user['id'], $startDate, $endDate);
+        $paged = $this->transactionModel->paginateReportByRange((int) $user['id'], $startDate, $endDate, $page, $perPage, $cursor);
+        $rows = $paged['items'] ?? [];
 
         $total = array_sum(array_map(static fn($r) => (float) $r['amount'], $rows));
         $dayCount = max((int) ((strtotime($endDate) - strtotime($startDate)) / 86400) + 1, 1);
@@ -46,7 +53,18 @@ class ApiReportController extends ApiController
                 'name' => $topCategoryName,
                 'amount' => (float) $categoryTotals[$topCategoryName],
             ] : null,
-            'transactions_count' => count($rows),
+            'transactions_count' => $totalTransactions,
+            'transactions_on_page' => count($rows),
+            'pagination' => [
+                'mode' => ($cursor !== null && $cursor > 0) ? 'cursor' : 'page',
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalTransactions,
+                'total_pages' => max(1, (int) ceil($totalTransactions / $perPage)),
+                'cursor' => ($cursor !== null && $cursor > 0) ? $cursor : null,
+                'next_cursor' => $paged['next_cursor'] ?? null,
+                'has_more' => (bool) ($paged['has_more'] ?? false),
+            ],
             'insights' => $insights,
             'transactions' => $rows,
         ]);
@@ -127,7 +145,7 @@ class ApiReportController extends ApiController
             exit;
         }
 
-        $this->error('Invalid format. Use csv, excel, or pdf.', 422);
+        $this->error('Invalid format. Use csv, excel, or pdf.', 422, [], 'REPORT_INVALID_FORMAT');
     }
 
     private function resolveDateRange(): array
