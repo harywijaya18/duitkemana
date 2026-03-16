@@ -60,6 +60,7 @@ class AuthController extends Controller
             'email' => $user['email'],
             'currency' => $user['currency'],
         ];
+        persist_auth_cookie($_SESSION['user']);
 
         try {
             $this->userModel->touchLastLogin((int) $user['id']);
@@ -135,6 +136,7 @@ class AuthController extends Controller
         }
 
         $_SESSION = [];
+        clear_auth_cookie();
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);

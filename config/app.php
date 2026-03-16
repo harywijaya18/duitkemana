@@ -64,6 +64,8 @@ $adminEmails = array_values(array_filter(array_map('trim', explode(',', (string)
 define('ADMIN_EMAILS', $adminEmails);
 define('API_RATE_LIMIT_MAX', (int) (getenv('API_RATE_LIMIT_MAX') ?: 120));
 define('API_RATE_LIMIT_WINDOW_SECONDS', (int) (getenv('API_RATE_LIMIT_WINDOW_SECONDS') ?: 60));
+define('AUTH_COOKIE_NAME', 'duitkemana_auth');
+define('AUTH_COOKIE_SECRET', (string) (getenv('APP_KEY') ?: hash('sha256', $basePath . '|duitkemana')));
 
 // Supported currencies with their IDR exchange rates (updated 2026-03)
 // These are approximate rates; update via .env EXCHANGE_RATES_JSON for production.

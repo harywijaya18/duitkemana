@@ -49,9 +49,112 @@ function require_auth(): void
     }
 }
 
+function auth_cookie_payload(): ?array
+{
+    $raw = $_COOKIE[AUTH_COOKIE_NAME] ?? '';
+    if (!is_string($raw) || $raw === '') {
+        return null;
+    }
+
+    $decoded = base64_decode(strtr($raw, '-_', '+/'), true);
+    if (!is_string($decoded) || $decoded === '') {
+        return null;
+    }
+
+    $payload = json_decode($decoded, true);
+    if (!is_array($payload) || empty($payload['data']) || empty($payload['sig'])) {
+        return null;
+    }
+
+    $data = $payload['data'];
+    $sig = (string) $payload['sig'];
+    $jsonData = json_encode($data);
+    if (!is_string($jsonData)) {
+        return null;
+    }
+
+    $expected = hash_hmac('sha256', $jsonData, AUTH_COOKIE_SECRET);
+    if (!hash_equals($expected, $sig)) {
+        return null;
+    }
+
+    if (!isset($data['id'], $data['name'], $data['email'], $data['currency'])) {
+        return null;
+    }
+
+    return [
+        'id' => (int) $data['id'],
+        'name' => (string) $data['name'],
+        'email' => (string) $data['email'],
+        'currency' => (string) $data['currency'],
+    ];
+}
+
+function persist_auth_cookie(array $user): void
+{
+    $data = [
+        'id' => (int) ($user['id'] ?? 0),
+        'name' => (string) ($user['name'] ?? ''),
+        'email' => (string) ($user['email'] ?? ''),
+        'currency' => (string) ($user['currency'] ?? 'IDR'),
+    ];
+
+    $jsonData = json_encode($data);
+    if (!is_string($jsonData)) {
+        return;
+    }
+
+    $payload = [
+        'data' => $data,
+        'sig' => hash_hmac('sha256', $jsonData, AUTH_COOKIE_SECRET),
+    ];
+
+    $encoded = base64_encode((string) json_encode($payload));
+    $cookieValue = strtr($encoded, '+/', '-_');
+
+    $httpsServerFlag = strtolower((string) ($_SERVER['HTTPS'] ?? ''));
+    $requestScheme = strtolower((string) ($_SERVER['REQUEST_SCHEME'] ?? ''));
+    $serverPort = (string) ($_SERVER['SERVER_PORT'] ?? '');
+    $isHttps = ($httpsServerFlag === 'on' || $httpsServerFlag === '1' || $requestScheme === 'https' || $serverPort === '443');
+
+    setcookie(AUTH_COOKIE_NAME, $cookieValue, [
+        'expires' => time() + 86400 * 7,
+        'path' => '/',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
+function clear_auth_cookie(): void
+{
+    $httpsServerFlag = strtolower((string) ($_SERVER['HTTPS'] ?? ''));
+    $requestScheme = strtolower((string) ($_SERVER['REQUEST_SCHEME'] ?? ''));
+    $serverPort = (string) ($_SERVER['SERVER_PORT'] ?? '');
+    $isHttps = ($httpsServerFlag === 'on' || $httpsServerFlag === '1' || $requestScheme === 'https' || $serverPort === '443');
+
+    setcookie(AUTH_COOKIE_NAME, '', [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
 function auth_user(): ?array
 {
-    return $_SESSION['user'] ?? null;
+    if (!empty($_SESSION['user']) && is_array($_SESSION['user'])) {
+        return $_SESSION['user'];
+    }
+
+    $cookieUser = auth_cookie_payload();
+    if ($cookieUser !== null) {
+        $_SESSION['user'] = $cookieUser;
+        return $cookieUser;
+    }
+
+    return null;
 }
 
 function admin_emails(): array
